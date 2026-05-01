@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="build-version" content="20260429230251">
+<meta name="theme-color" content="#0f1d30">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="أدوية الأطفال">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<title>Pediatric Drug Guide</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#eef4fb; --surface:#fff; --surface2:#f4f8fd; --border:#dde8f5;
+  --text:#0f1d30; --muted:#5a7a9a; --shadow:0 2px 14px rgba(30,80,150,.08); --accent:#1d4ed8;
+}
+body { background:var(--bg); font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color:var(--text); padding:0 0 100px; }
+
+/* ── HEADER ── */
+header { text-align:center; padding:36px 20px 30px; }
+.header-inner { display:inline-block; padding:26px 48px 24px; background:linear-gradient(135deg,#0f1d30,#1a3a5c); color:#eef4fb; border-radius:22px; box-shadow:0 8px 32px rgba(15,29,48,.25); }
+.eyebrow { font-size:10px; letter-spacing:4px; text-transform:uppercase; opacity:.45; margin-bottom:8px; }
+header h1 { font-family:Georgia, 'Times New Roman', serif; font-size:clamp(26px,5vw,48px); line-height:1.1; }
+header h1 em { font-style:italic; opacity:.65; }
+.sub { margin-top:9px; font-size:12px; opacity:.45; letter-spacing:1px; }
+
+/* ── STICKY TOOLBAR ── */
+.tools-bar {
+  position:sticky; top:0; z-index:300;
+  background:rgba(238,244,251,.97); backdrop-filter:blur(14px);
+  border-bottom:1.5px solid var(--border);
+  padding:10px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  box-shadow:0 4px 20px rgba(30,80,150,.10);
+}
+.search-wrap { flex:1; min-width:180px; position:relative; display:flex; align-items:center; }
+.search-wrap svg { position:absolute; left:10px; color:var(--muted); pointer-events:none; }
+#searchInput {
+  width:100%; padding:9px 34px 9px 32px;
+  border:1.5px solid var(--border); border-radius:11px;
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:13px; background:var(--surface); color:var(--text);
+  outline:none; transition:border-color .2s, box-shadow .2s;
+}
+#searchInput:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(29,78,216,.12); }
+#searchInput::placeholder { color:#aab8cc; }
+#clearSearch {
+  position:absolute; right:9px; background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:15px; display:none; padding:2px; line-height:1; border-radius:3px;
+}
+#clearSearch:hover { color:#dc2626; }
+#clearSearch.vis { display:flex; align-items:center; }
+
+.weight-wrap {
+  display:flex; align-items:center; gap:7px; background:var(--surface);
+  border:1.5px solid var(--border); border-radius:11px; padding:6px 13px; transition:border-color .2s;
+}
+.weight-wrap:focus-within { border-color:#16a085; box-shadow:0 0 0 3px rgba(22,160,133,.12); }
+.wlbl { font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
+#weightInput { width:58px; border:none; outline:none; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:14px; font-weight:700; color:#16a085; background:transparent; text-align:center; }
+#weightInput::placeholder { color:#b0c4c0; font-weight:400; font-size:12px; }
+.kglbl { font-size:12px; font-weight:700; color:#16a085; }
+
+/* Edit Toggle Button */
+.btn-edit {
+  display:flex; align-items:center; gap:6px; padding:7px 14px;
+  border-radius:10px; border:1.5px solid var(--border); background:var(--surface);
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:12px; font-weight:700; cursor:pointer;
+  transition:all .2s; color:var(--text); white-space:nowrap;
+}
+.btn-edit:hover { border-color:var(--accent); color:var(--accent); background:#eff6ff; }
+.btn-edit.active { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+.edit-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; display:none; }
+.btn-edit.active .edit-dot { display:inline-block; }
+
+/* Export Button */
+.btn-export {
+  display:flex; align-items:center; gap:6px; padding:7px 14px;
+  border-radius:10px; border:1.5px solid #16a085; background:#f0fdf4;
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:12px; font-weight:700; cursor:pointer;
+  transition:all .2s; color:#15803d; white-space:nowrap;
+}
+.btn-export:hover { background:#dcfce7; border-color:#15803d; }
+
+/* Reset Button */
+.btn-reset {
+  display:flex; align-items:center; gap:6px; padding:7px 14px;
+  border-radius:10px; border:1.5px solid #fca5a5; background:#fff5f5;
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:12px; font-weight:700; cursor:pointer;
+  transition:all .2s; color:#dc2626; white-space:nowrap;
+}
+.btn-reset:hover { background:#fee2e2; border-color:#dc2626; }
+
+.results-badge { font-size:11px; font-weight:700; padding:5px 11px; border-radius:20px; background:#e8f0fc; color:var(--accent); white-space:nowrap; display:none; }
+.results-badge.vis { display:block; }
+
+/* ── GRID ── */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:20px; max-width:1400px; margin:28px auto 0; padding:0 20px; }
+
+/* ── CARD ── */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); transition:opacity .2s; }
+.card.hidden { display:none; }
+.stripe { height:5px; width:100%; }
+.card-header { display:flex; align-items:center; gap:12px; padding:16px 18px 12px; border-bottom:1px solid var(--border); background:var(--surface2); }
+.ico { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.card-title { font-size:14px; font-weight:700; }
+.card-ar { font-size:11.5px; color:var(--muted); direction:rtl; margin-top:2px; }
+.card-body { padding:13px 14px 16px; display:flex; flex-direction:column; gap:7px; }
+
+/* ── SECTION LABEL ── */
+.sl { font-size:9.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-top:4px; padding-bottom:3px; border-bottom:1px dashed var(--border); }
+.sl.hidden { display:none; }
+
+/* ── DRUG ROW ── */
+.drug {
+  padding:8px 10px; border-radius:9px; border-left:3px solid transparent;
+  background:var(--surface2); display:flex; flex-direction:column; gap:2px;
+  position:relative; transition:background .14s;
+}
+.drug:hover { background:#e8f0fc; }
+.drug.hidden { display:none; }
+.dn { font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.tag { font-size:8.5px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:2px 6px; border-radius:4px; color:#fff; flex-shrink:0; cursor:default; }
+.dd { font-size:11.5px; color:var(--muted); line-height:1.5; }
+.chips { display:flex; flex-wrap:wrap; gap:5px; padding:2px 0; }
+.chip { padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:600; border:1px solid; }
+.note { padding:7px 10px; border-radius:8px; font-size:11.5px; color:var(--muted); background:var(--surface2); border:1px dashed var(--border); line-height:1.5; }
+.warn { padding:7px 10px; border-radius:8px; font-size:11.5px; color:#7b3f00; background:#fef9f0; border:1px solid #f5cba7; line-height:1.5; }
+
+/* ── DOSE RESULT ── */
+.dose-result { display:none; align-items:center; gap:6px; margin-top:4px; padding:6px 10px; border-radius:8px; background:linear-gradient(135deg,#e8faf4,#d4f5e7); border:1.5px solid #7dcea0; }
+.dose-result.show { display:flex; }
+.dose-val { font-size:12.5px; font-weight:700; color:#16a085; }
+.dose-freq { font-size:10px; font-weight:600; color:#27ae60; opacity:.8; margin-left:auto; }
+
+/* ── HIGHLIGHT ── */
+mark { background:#fef08a; color:var(--text); border-radius:2px; padding:0 1px; }
+
+/* ── EDIT MODE ── */
+body.edit-mode .drug { padding-right:30px; }
+
+/* editable fields */
+body.edit-mode .drug-name-text,
+body.edit-mode .dd {
+  outline:none; border-radius:4px; padding:1px 3px; margin:-1px -3px; cursor:text; min-width:20px;
+  transition:background .15s, box-shadow .15s;
+}
+body.edit-mode .drug-name-text:hover,
+body.edit-mode .dd:hover { background:#e8f4ff; box-shadow:0 0 0 1.5px #3b82f6; }
+body.edit-mode .drug-name-text:focus,
+body.edit-mode .dd:focus { background:#fff; box-shadow:0 0 0 2px #3b82f6; }
+
+/* delete drug button */
+.del-drug {
+  display:none; position:absolute; top:7px; right:7px;
+  width:20px; height:20px; border-radius:5px; border:none;
+  background:#fee2e2; color:#dc2626; font-size:13px; line-height:1;
+  cursor:pointer; align-items:center; justify-content:center; font-weight:700;
+  transition:background .15s;
+}
+.del-drug:hover { background:#fca5a5; }
+body.edit-mode .drug:hover .del-drug { display:flex; }
+
+/* tag edit */
+.tag-select-wrap { display:none; }
+body.edit-mode .drug:hover .tag-select-wrap { display:inline-flex; }
+body.edit-mode .drug:hover .tag-display { display:none; }
+
+/* add drug button */
+.add-drug-btn {
+  display:none; align-items:center; gap:5px; padding:7px 10px;
+  border-radius:9px; border:1.5px dashed #3b82f6; background:transparent;
+  color:#3b82f6; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; transition:background .14s; width:100%; margin-top:3px;
+}
+body.edit-mode .add-drug-btn { display:flex; }
+.add-drug-btn:hover { background:#eff6ff; }
+
+/* add card button */
+#addCardBtn {
+  display:none; align-items:center; gap:8px;
+  padding:20px 24px; border-radius:18px; border:2px dashed #3b82f6;
+  background:transparent; color:#3b82f6;
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; transition:background .14s; width:100%; justify-content:center;
+}
+body.edit-mode #addCardBtn { display:flex; }
+#addCardBtn:hover { background:#eff6ff; }
+
+/* no results */
+#noResults { display:none; text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+#noResults.vis { display:block; }
+#noResults .nr-icon { font-size:46px; margin-bottom:12px; }
+
+footer { text-align:center; margin-top:48px; font-size:11px; color:var(--muted); letter-spacing:1px; padding:0 20px; }
+@media(max-width:540px){ .grid{grid-template-columns:1fr;} .tools-bar{gap:8px;} }
+
+/* ══ COLOUR THEMES ══ */
+.fever   .stripe{background:#e74c3c}.fever   .ico{background:#fdecea}.fever   .drug{border-left-color:#e74c3c}.fever   .tag{background:#e74c3c}
+.nausea  .stripe{background:#8e44ad}.nausea  .ico{background:#f5eef8}.nausea  .drug{border-left-color:#8e44ad}.nausea  .tag{background:#8e44ad}
+.stomach .stripe{background:#16a085}.stomach .ico{background:#e8f8f5}.stomach .drug{border-left-color:#16a085}.stomach .tag{background:#16a085}
+.colic   .stripe{background:#f39c12}.colic   .ico{background:#fef9e7}.colic   .drug{border-left-color:#f39c12}.colic   .tag{background:#f39c12}
+.diarr   .stripe{background:#27ae60}.diarr   .ico{background:#eafaf1}.diarr   .drug{border-left-color:#27ae60}.diarr   .tag{background:#27ae60}.diarr .chip{background:#eafaf1;border-color:#7dcea0;color:#27ae60}
+.const   .stripe{background:#d35400}.const   .ico{background:#fef0e7}.const   .drug{border-left-color:#d35400}.const   .tag{background:#d35400}
+.allergy .stripe{background:#2980b9}.allergy .ico{background:#eaf3fb}.allergy .drug{border-left-color:#2980b9}.allergy .tag{background:#2980b9}
+.cough   .stripe{background:#1abc9c}.cough   .ico{background:#e8f8f5}.cough   .drug{border-left-color:#1abc9c}.cough   .tag{background:#1abc9c}
+.resp    .stripe{background:#c0392b}.resp    .ico{background:#fdecea}.resp    .drug{border-left-color:#c0392b}.resp    .tag{background:#c0392b}
+.gut     .stripe{background:#7d3c98}.gut     .ico{background:#f5eef8}.gut     .drug{border-left-color:#7d3c98}.gut     .tag{background:#7d3c98}
+.uti     .stripe{background:#2471a3}.uti     .ico{background:#eaf3fb}.uti     .drug{border-left-color:#2471a3}.uti     .tag{background:#2471a3}
+.skin    .stripe{background:#ca6f1e}.skin    .ico{background:#fef5e7}.skin    .drug{border-left-color:#ca6f1e}.skin    .tag{background:#ca6f1e}
+.diaper  .stripe{background:#e91e8c}.diaper  .ico{background:#fce4ec}.diaper  .drug{border-left-color:#e91e8c}.diaper  .tag{background:#e91e8c}
+.vitd    .stripe{background:#f1c40f}.vitd    .ico{background:#fefde7}.vitd    .drug{border-left-color:#f1c40f}.vitd    .tag{background:#c9a000}
+.iron    .stripe{background:#e74c3c}.iron    .ico{background:#fdecea}.iron    .drug{border-left-color:#e74c3c}.iron    .tag{background:#e74c3c}
+.appet   .stripe{background:#27ae60}.appet   .ico{background:#eafaf1}.appet   .drug{border-left-color:#27ae60}.appet   .tag{background:#27ae60}
+.omega   .stripe{background:#2980b9}.omega   .ico{background:#eaf3fb}.omega   .drug{border-left-color:#2980b9}.omega   .tag{background:#2980b9}
+.throat  .stripe{background:#8e44ad}.throat  .ico{background:#f5eef8}.throat  .drug{border-left-color:#8e44ad}.throat  .tag{background:#8e44ad}
+.worms   .stripe{background:#16a085}.worms   .ico{background:#e8f8f5}.worms   .drug{border-left-color:#16a085}.worms   .tag{background:#16a085}
+
+/* ══ MODAL ══ */
+.modal-bg {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:rgba(15,29,48,.55); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:var(--surface); border-radius:20px; padding:28px 28px 24px;
+  width:100%; max-width:480px; box-shadow:0 20px 60px rgba(15,29,48,.3);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.modal h2 { font-size:17px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+.form-row { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.form-row label { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.8px; text-transform:uppercase; }
+.form-row input, .form-row select, .form-row textarea {
+  padding:9px 12px; border:1.5px solid var(--border); border-radius:9px;
+  font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; font-size:13px; color:var(--text);
+  outline:none; background:var(--surface); transition:border-color .2s;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(29,78,216,.1); }
+.form-row textarea { resize:vertical; min-height:60px; }
+.dose-hint { font-size:10.5px; color:var(--muted); margin-top:3px; font-style:italic; }
+.modal-actions { display:flex; gap:10px; margin-top:20px; }
+.btn-primary {
+  flex:1; padding:10px 16px; border-radius:10px; border:none;
+  background:#1d4ed8; color:#fff; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer; transition:background .2s;
+}
+.btn-primary:hover { background:#1e40af; }
+.btn-cancel {
+  padding:10px 16px; border-radius:10px; border:1.5px solid var(--border);
+  background:var(--surface); color:var(--muted); font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.btn-cancel:hover { border-color:#dc2626; color:#dc2626; }
+
+/* ── ADD CARD MODAL ── */
+.color-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-top:4px; }
+.color-opt {
+  width:100%; aspect-ratio:1; border-radius:8px; border:2.5px solid transparent;
+  cursor:pointer; transition:transform .15s; outline:none;
+}
+.color-opt:hover { transform:scale(1.1); }
+.color-opt.selected { border-color:var(--text); transform:scale(1.08); }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:24px; right:24px; background:#0f1d30; color:#fff;
+  padding:10px 18px; border-radius:10px; font-size:13px; font-weight:500;
+  box-shadow:0 4px 20px rgba(0,0,0,.2); opacity:0; transform:translateY(10px);
+  transition:all .3s; pointer-events:none; z-index:9999;
+}
+.toast.show { opacity:1; transform:translateY(0); }
+
+/* ── PRICE FIELD ── */
+.drug-price { display:flex; align-items:center; gap:5px; font-size:11px; color:#15803d; font-weight:600; margin-top:3px; }
+.price-val { font-size:11.5px; }
+body.edit-mode .price-edit { display:inline-block !important; }
+body.edit-mode .price-val { display:none !important; }
+.price-edit { display:none; width:100px; font-size:11px; padding:2px 7px; border:1.5px solid #7dcea0; border-radius:6px; color:#15803d; background:#f0fdf4; outline:none; font-family:system-ui,sans-serif; }
+.price-edit:focus { border-color:#16a085; box-shadow:0 0 0 2px rgba(22,160,133,.15); }
+
+/* ── QR SCAN BUTTON ── */
+.btn-qr-scan { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:10px; border:1.5px solid #7c3aed; background:#f5f3ff; font-family:system-ui,sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; color:#7c3aed; white-space:nowrap; }
+.btn-qr-scan:hover { background:#ede9fe; border-color:#6d28d9; }
+
+/* ── QR SCANNER MODAL ── */
+.qr-modal-inner {
+  background:#fff; border-radius:24px; padding:20px 18px 18px;
+  max-width:420px; width:96%;
+  box-shadow:0 24px 70px rgba(0,0,0,.4);
+  max-height:96vh; overflow-y:auto;
+}
+.qr-modal-title { font-size:16px; font-weight:800; text-align:center; margin-bottom:2px; color:#0f1d30; }
+.qr-modal-sub { font-size:11px; color:var(--muted); text-align:center; margin-bottom:12px; line-height:1.5; }
+
+/* ── CAMERA VIEWPORT ── */
+.qr-cam-wrap {
+  position:relative; border-radius:16px; overflow:hidden;
+  background:#0a0f1a; margin-bottom:10px;
+  min-height:240px;
+}
+#qrReaderBox { width:100%; }
+#qrReaderBox video { width:100% !important; height:auto !important; display:block !important; border-radius:0; object-fit:cover; }
+#qrReaderBox img { display:none !important; }
+#qrReaderBox > div > div { display:none !important; } /* hide html5-qrcode UI junk */
+
+/* scanning frame overlay */
+.qr-frame-overlay {
+  position:absolute; inset:0; pointer-events:none;
+  display:flex; align-items:center; justify-content:center;
+}
+.qr-frame {
+  width:200px; height:160px; position:relative;
+}
+.qr-frame::before, .qr-frame::after,
+.qr-frame-tl, .qr-frame-br {
+  content:''; position:absolute; width:28px; height:28px;
+  border-color:#4ade80; border-style:solid;
+}
+.qr-frame::before  { top:0; left:0;    border-width:3px 0 0 3px; border-radius:4px 0 0 0; }
+.qr-frame::after   { top:0; right:0;   border-width:3px 3px 0 0; border-radius:0 4px 0 0; }
+.qr-frame-tl       { bottom:0; left:0; border-width:0 0 3px 3px; border-radius:0 0 0 4px; }
+.qr-frame-br       { bottom:0; right:0;border-width:0 3px 3px 0; border-radius:0 0 4px 0; }
+
+/* scan line animation */
+.qr-scan-line {
+  position:absolute; left:10%; right:10%; height:2px;
+  background:linear-gradient(90deg,transparent,#4ade80,transparent);
+  border-radius:2px; box-shadow:0 0 8px #4ade80;
+  animation:scanLine 2s ease-in-out infinite;
+  top:50%;
+}
+@keyframes scanLine {
+  0%   { transform:translateY(-70px); opacity:0; }
+  10%  { opacity:1; }
+  90%  { opacity:1; }
+  100% { transform:translateY(70px); opacity:0; }
+}
+
+/* cam toolbar overlay */
+.qr-cam-toolbar {
+  position:absolute; bottom:8px; left:0; right:0;
+  display:flex; justify-content:center; gap:10px; z-index:10;
+}
+.qr-cam-btn {
+  background:rgba(0,0,0,.55); backdrop-filter:blur(8px);
+  border:1.5px solid rgba(255,255,255,.2); color:#fff;
+  border-radius:50px; padding:7px 16px; font-size:12px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:6px;
+  font-family:system-ui,sans-serif; transition:all .2s;
+}
+.qr-cam-btn:hover  { background:rgba(0,0,0,.75); border-color:rgba(255,255,255,.4); }
+.qr-cam-btn.torch-on { background:rgba(250,204,21,.25); border-color:#facc15; color:#facc15; }
+
+/* cam status bar */
+.qr-status-bar {
+  position:absolute; top:8px; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,.55); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.15); color:#fff;
+  border-radius:20px; padding:4px 14px; font-size:11px; font-weight:600;
+  white-space:nowrap; z-index:10; transition:all .3s;
+}
+.qr-status-bar.ok   { background:rgba(22,160,133,.7); border-color:#4ade80; }
+.qr-status-bar.err  { background:rgba(220,38,38,.7); border-color:#fca5a5; }
+
+/* permission prompt */
+.qr-perm-prompt {
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  min-height:220px; gap:12px; padding:20px;
+}
+.qr-perm-prompt.show { display:flex; }
+.qr-perm-icon { font-size:48px; }
+.qr-perm-text { font-size:13px; font-weight:700; color:#0f1d30; text-align:center; line-height:1.5; }
+.qr-perm-sub  { font-size:11px; color:var(--muted); text-align:center; }
+.qr-perm-btn  {
+  padding:11px 28px; border-radius:12px; border:none;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  color:#fff; font-size:13px; font-weight:700; cursor:pointer;
+  font-family:system-ui,sans-serif; box-shadow:0 4px 16px rgba(124,58,237,.35);
+}
+
+/* result box */
+.qr-result-box { display:none; padding:14px; border-radius:14px; background:#e8faf4; border:1.5px solid #7dcea0; margin-bottom:10px; animation:fadeIn .3s; }
+.qr-result-box.show { display:block; }
+.qr-not-found { display:none; padding:12px 14px; border-radius:14px; background:#fff5f5; border:1.5px solid #fca5a5; margin-bottom:10px; text-align:center; font-size:13px; font-weight:600; color:#dc2626; animation:fadeIn .25s; }
+.qr-not-found.show { display:block; }
+.qr-res-name  { font-size:16px; font-weight:800; color:#0f1d30; margin-bottom:2px; }
+.qr-res-card  { font-size:11px; color:var(--muted); margin-bottom:6px; }
+.qr-res-dose  { font-size:11.5px; color:#1d4ed8; margin-bottom:8px; line-height:1.5; }
+.qr-res-price { font-size:22px; font-weight:800; color:#15803d; }
+.qr-res-price-na { font-size:11px; color:var(--muted); font-style:italic; }
+.qr-scan-btns { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:4px; }
+.qr-raw { font-size:10px; color:var(--muted); text-align:center; margin-top:8px; word-break:break-all; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* link-barcode button (shown in edit mode on each drug) */
+.btn-link-qr {
+  display:none; align-items:center; gap:4px;
+  padding:3px 8px; border-radius:6px;
+  border:1.5px solid #7c3aed; background:#f5f3ff;
+  font-size:10px; font-weight:700; color:#7c3aed; cursor:pointer;
+  font-family:system-ui,sans-serif; transition:all .2s;
+}
+body.edit-mode .btn-link-qr { display:inline-flex; }
+.btn-link-qr.linked { background:#ede9fe; border-color:#6d28d9; color:#4c1d95; }
+
+/* ── CAMERA FLIP BUTTON ── */
+.btn-flip-cam {
+  display:flex; align-items:center; gap:6px; padding:7px 14px;
+  border-radius:10px; border:1.5px solid #0f1d30; background:#0f1d30;
+  font-family:system-ui,sans-serif; font-size:12px; font-weight:700;
+  cursor:pointer; transition:all .2s; color:#fff; white-space:nowrap;
+}
+.btn-flip-cam:hover { background:#1a3a5c; border-color:#1a3a5c; }
+
+/* ── FAB SCAN BUTTON ── */
+.fab-scan {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  z-index:800;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  color:#fff; border:none; border-radius:50px;
+  padding:14px 28px; font-size:14px; font-weight:700;
+  font-family:system-ui,sans-serif;
+  cursor:pointer; box-shadow:0 8px 28px rgba(124,58,237,.45);
+  display:flex; align-items:center; gap:10px;
+  transition:all .25s;
+}
+.fab-scan:hover  { transform:translateX(-50%) scale(1.05); box-shadow:0 10px 32px rgba(124,58,237,.55); }
+.fab-scan:active { transform:translateX(-50%) scale(.97); }
+.fab-scan-pulse { width:10px; height:10px; border-radius:50%; background:#4ade80; animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+/* ── QR DOSE CALC IN RESULT ── */
+.qr-dose-calc { margin-top:10px; padding:10px 12px; border-radius:10px; background:#f0f9ff; border:1.5px solid #bae6fd; }
+.qr-dose-calc-title { font-size:10px; font-weight:700; color:#0369a1; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+.qr-dose-inputs { display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+.qr-dose-input-wrap { display:flex; align-items:center; gap:5px; background:#fff; border:1.5px solid #bae6fd; border-radius:8px; padding:5px 10px; }
+.qr-dose-input-wrap input { width:60px; border:none; outline:none; font-size:14px; font-weight:700; color:#0369a1; background:transparent; text-align:center; }
+.qr-dose-input-wrap span { font-size:11px; font-weight:700; color:#0369a1; }
+.qr-dose-result-line { margin-top:7px; padding:7px 10px; border-radius:8px; background:linear-gradient(135deg,#e8faf4,#d4f5e7); border:1.5px solid #7dcea0; font-size:13px; font-weight:700; color:#16a085; display:none; }
+.qr-dose-result-line.show { display:block; }
+.qr-dose-age-toggle { display:flex; gap:5px; }
+.qr-dose-age-toggle button { padding:4px 10px; border-radius:6px; border:1.5px solid #bae6fd; background:#f0f9ff; color:#0369a1; font-size:10px; font-weight:700; cursor:pointer; font-family:system-ui,sans-serif; }
+.qr-dose-age-toggle button.active { background:#0369a1; color:#fff; border-color:#0369a1; }
+
+/* ── SCAN AGAIN BUTTON ── */
+.btn-scan-again { display:flex; align-items:center; gap:5px; padding:7px 14px; border-radius:10px; border:1.5px solid #7c3aed; background:#f5f3ff; font-family:system-ui,sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; color:#7c3aed; white-space:nowrap; }
+.btn-scan-again:hover { background:#ede9fe; }
+
+</style>
+</head>
+<body class="">
+
+<header>
+  <div class="header-inner">
+    <p class="eyebrow">Clinical Pharmacy · Quick Reference</p>
+    <h1>Pediatric<br><em>Drug Guide</em></h1>
+    <p class="sub">دليل الأدوية الأطفال · قابل للتعديل · حاسبة الجرعات</p>
+  </div>
+</header>
+
+<!-- ══ STICKY TOOLBAR ══ -->
+<div class="tools-bar">
+  <!-- Search -->
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+    <input type="text" id="searchInput" placeholder="ابحث عن دواء... / Search" autocomplete="off" spellcheck="false">
+    <button id="clearSearch" title="مسح" class="">✕</button>
+  </div>
+  <!-- Weight -->
+  <div class="weight-wrap" title="أدخل الوزن لحساب الجرعة">
+    <span class="wlbl">⚖️ الوزن</span>
+    <input type="number" id="weightInput" placeholder="0" min="1" max="200" step="0.1">
+    <span class="kglbl">kg</span>
+  </div>
+  <!-- Edit toggle -->
+  <button class="btn-edit" id="editToggle" onclick="toggleEdit()">
+    <span class="edit-dot"></span>
+    <span id="editLabel">✏️ تعديل</span>
+  </button>
+  <!-- Export -->
+  <button class="btn-export" onclick="exportFile()">💾 تحميل الملف</button>
+  <!-- Reset -->
+  <button class="btn-qr-scan" onclick="openQrScanner()">📷 مسح دواء</button>
+  <button class="btn-reset" onclick="resetState()" title="حذف جميع التعديلات والرجوع للأصل">↩ إعادة تعيين</button>
+  <!-- Results -->
+  <div class="results-badge" id="resultsBadge">57 نتيجة</div>
+</div>
+
+<!-- ══ AGE-WEIGHT CALCULATOR ══ -->
+<div id="ageCalcSection" style="max-width:1400px;margin:18px auto 0;padding:0 20px;">
+  <div style="background:#fff;border:1.5px solid #dde8f5;border-radius:18px;box-shadow:0 2px 14px rgba(30,80,150,.08);overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#0f1d30,#1a3a5c);padding:14px 22px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="toggleAgeCalc()">
+      <span style="font-size:20px;">👶</span>
+      <div style="flex:1;">
+        <div style="color:#fff;font-size:13px;font-weight:700;">حاسبة الوزن من العمر</div>
+        <div style="color:rgba(255,255,255,.5);font-size:10px;letter-spacing:1px;">Age → Weight Calculator · المصدر: سجلات عيادة الأطفال</div>
+      </div>
+      <span id="ageCalcArrow" style="color:rgba(255,255,255,.6);font-size:18px;transition:transform .3s;">▾</span>
+    </div>
+    <div id="ageCalcBody" style="padding:18px 22px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;">
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <label style="font-size:10px;font-weight:700;color:#5a7a9a;letter-spacing:1px;text-transform:uppercase;">نوع الإدخال</label>
+        <div style="display:flex;gap:6px;">
+          <button id="modeMonths" onclick="setAgeMode('months')" style="padding:6px 13px;border-radius:8px;border:1.5px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">بالأشهر</button>
+          <button id="modeYears" onclick="setAgeMode('years')" style="padding:6px 13px;border-radius:8px;border:1.5px solid #dde8f5;background:#f4f8fd;color:#5a7a9a;font-size:11px;font-weight:700;cursor:pointer;">بالسنوات</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <label id="ageInputLabel" style="font-size:10px;font-weight:700;color:#5a7a9a;letter-spacing:1px;text-transform:uppercase;">العمر (بالأشهر)</label>
+        <input type="number" id="ageInput" placeholder="0" min="0" max="144" step="1" oninput="calcWeightFromAge()"
+          style="width:110px;padding:9px 12px;border:1.5px solid #dde8f5;border-radius:10px;font-size:16px;font-weight:700;color:#1d4ed8;outline:none;text-align:center;background:#fff;"
+          onfocus="this.style.borderColor='#1d4ed8'" onblur="this.style.borderColor='#dde8f5'">
+      </div>
+      <div id="ageWeightResult" style="display:none;flex:1;min-width:200px;">
+        <div style="background:linear-gradient(135deg,#e8faf4,#d4f5e7);border:1.5px solid #7dcea0;border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+          <span style="font-size:26px;">⚖️</span>
+          <div>
+            <div style="font-size:10px;color:#27ae60;font-weight:700;letter-spacing:1px;text-transform:uppercase;">الوزن التقديري</div>
+            <div id="ageWeightVal" style="font-size:22px;font-weight:700;color:#16a085;line-height:1.1;"></div>
+            <div id="ageWeightNote" style="font-size:10px;color:#5a7a9a;margin-top:2px;"></div>
+          </div>
+          <button onclick="applyWeightToCalc()" style="margin-left:auto;padding:8px 14px;border-radius:9px;border:none;background:#16a085;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ استخدم هذا الوزن</button>
+        </div>
+      </div>
+      <div id="ageWeightEmpty" style="flex:1;min-width:180px;padding:12px 16px;border:1.5px dashed #dde8f5;border-radius:12px;color:#aab8cc;font-size:12px;text-align:center;">أدخل عمر الطفل لمعرفة الوزن التقديري</div>
+    </div>
+  </div>
+</div>
+<style>#ageCalcBody{transition:max-height .35s ease,padding .35s ease;}#ageCalcBody.collapsed{max-height:0!important;padding-top:0!important;padding-bottom:0!important;overflow:hidden;}</style>
+
+
+<!-- ══ GRID ══ -->
+<div class="grid" id="mainGrid">
+
+  <div id="noResults">
+    <div class="nr-icon">🔍</div>
+    <p style="font-size:15px;font-weight:600;">لا توجد نتائج</p>
+    <small style="font-size:12px;opacity:.7;">جرب كلمة أخرى · Try another term</small>
+  </div>
+
+  <!-- 1. ANTIPYRETICS -->
+  <div class="card fever">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🌡️</div><div><div class="card-title">Antipyretics &amp; Analgesics</div><div class="card-ar">خافضات الحرارة والمسكنات</div></div></div>
+    <div class="card-body">
+      <div class="sl">Paracetamol</div>
+      <div class="drug"><div class="dn"><span class="tag">DOSE</span><span class="drug-name-text" contenteditable="false">Paracetamol</span></div><div class="dd" contenteditable="false">10–15 mg/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 100–150 mg</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Adol 120/125 mg/5ml</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Paracetamol 250 mg/5ml</span></div><div class="dd" contenteditable="false">0.25 cc/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 2.5 ml</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">NSAIDs</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Brufen (Ibuprofen)</span></div><div class="dd" contenteditable="false">0.25–0.5 cc/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 2.5–5 ml</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SUP</span><span class="drug-name-text" contenteditable="false">Voltaren Suppositories</span></div><div class="dd" contenteditable="false">2–3 mg/kg / day</div><div class="dose-result"><span class="dose-val">⚖️ 20–30 mg</span><span class="dose-freq">2–3 mg/kg / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 2. NAUSEA -->
+  <div class="card nausea">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🤢</div><div><div class="card-title">Nausea &amp; Vomiting</div><div class="card-ar">الغثيان والقيء</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">AMP</span><span class="drug-name-text" contenteditable="false">Ondansetron Ampoule</span></div><div class="dd" contenteditable="false">0.1–0.15 mg/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 1–1.5 mg</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Ondansetron Syrup</span></div><div class="dd" contenteditable="false">0.2 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 2 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Plasil (Metoclopramide) Drops</span></div><div class="dd" contenteditable="false">1–2 drops/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 10–20 drops</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Domperidone Syrup</span></div><div class="dd" contenteditable="false">0.3 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 3 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 3. STOMACH -->
+  <div class="card stomach">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🫃</div><div><div class="card-title">Stomach Ache</div><div class="card-ar">آلام المعدة</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">SAC</span><span class="drug-name-text" contenteditable="false">Esomeprazole (Nexium) Sachet</span></div><div class="dd" contenteditable="false">10 mg · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Hyoscine (Buscopan) Syrup</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Homatropine (Spasmin) Drops</span></div><div class="dd" contenteditable="false">2 drops/kg · 3–4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 20 drops</span><span class="dose-freq">3–4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 4. COLIC -->
+  <div class="card colic">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🫧</div><div><div class="card-title">Colic &amp; Gases</div><div class="card-ar">المغص والغازات</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Simethicone &lt; 1 year</span></div><div class="dd" contenteditable="false">20 mg / 0.5 cc · 3–4 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Simethicone &gt; 1 year</span></div><div class="dd" contenteditable="false">40 mg / 1 cc · 3–4 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 5. DIARRHEA -->
+  <div class="card diarr">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">💧</div><div><div class="card-title">Diarrhea (Bacterial &amp; Viral)</div><div class="card-ar">الإسهال البكتيري والفيروسي</div></div></div>
+    <div class="card-body">
+      <div class="sl">Antibiotics</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Azithromycin</span></div><div class="dd" contenteditable="false">0.25 cc/kg · once daily</div><div class="dose-result"><span class="dose-val">⚖️ 2.5 ml</span><span class="dose-freq">once daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Trimethoprim</span></div><div class="dd" contenteditable="false">0.5 cc/kg · twice daily</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">twice daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Metronidazole 120 mg/5ml</span></div><div class="dd" contenteditable="false">0.2–0.3 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 2–3 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Metronidazole 200 mg/5ml</span></div><div class="dd" contenteditable="false">0.2 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 2 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">ORS (after each stool)</div>
+      <div class="chips"><span class="chip">&lt;1 yr → 50 ml</span><span class="chip">1–3 yr → 100 ml</span><span class="chip">3–5 yr → 150 ml</span><span class="chip">&gt;5 yr → 200 ml</span></div>
+      <div class="sl">Probiotics</div>
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Probiotic Drops</span></div><div class="dd" contenteditable="false">5 drops · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SAC</span><span class="drug-name-text" contenteditable="false">Probiotic Sachet &amp;amp;amp;lt; 2 years</span></div><div class="dd" contenteditable="false">1 sachet · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SAC</span><span class="drug-name-text" contenteditable="false">Probiotic Sachet &gt; 2 years</span></div><div class="dd" contenteditable="false">1–2 sachets · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Zinc</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Zinc 20 mg/5ml</span></div><div class="dd" contenteditable="false">2.5 cc (&lt;1 yr) · 5 cc (&gt;1 yr) · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Zinc 15 mg/5ml</span></div><div class="dd" contenteditable="false">3.5 cc (&lt;1 yr) · 7 cc (&gt;1 yr) · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 6. CONSTIPATION -->
+  <div class="card const">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🧱</div><div><div class="card-title">Constipation</div><div class="card-ar">الإمساك</div></div></div>
+    <div class="card-body">
+      <div class="sl">Lactulose</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Lactulose — 1 mo–1 yr</span></div><div class="dd" contenteditable="false">2.5 ml · twice daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Lactulose — 1–4 years</span></div><div class="dd" contenteditable="false">5–10 ml · twice daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Lactulose — 4–12 years</span></div><div class="dd" contenteditable="false">10–20 ml · twice daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Lactulose — Adults</span></div><div class="dd" contenteditable="false">30–45 ml · once daily (or divided)</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Suppositories (&gt;2 yr)</div>
+      <div class="drug"><div class="dn"><span class="tag">SUP</span><span class="drug-name-text" contenteditable="false">Glycerin Suppository</span></div><div class="dd" contenteditable="false">1 supp · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SUP</span><span class="drug-name-text" contenteditable="false">Bisacodyl Suppository</span></div><div class="dd" contenteditable="false">1 supp · once daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 7. ALLERGY -->
+  <div class="card allergy">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🤧</div><div><div class="card-title">Allergy, Cold &amp; Nasal</div><div class="card-ar">الحساسية والزكام وأدوية الأنف</div></div></div>
+    <div class="card-body">
+      <div class="sl">Antihistamines</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Paracetamol + Chlorpheniramine</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 3× / day · &gt;2 yr</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">3× / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Actived (Triprolidine + Pseudoephedrine)</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 3× / day · &gt;2 yr</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">3× / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Loratadine</span></div><div class="dd" contenteditable="false">&gt; 1 year</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Desloratadine</span></div><div class="dd" contenteditable="false">&gt; 6 months</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Finstil (Dimetindene) Drops</span></div><div class="dd" contenteditable="false">2 drops/kg/day · &gt;1 month</div><div class="dose-result"><span class="dose-val">⚖️ 20 drops</span><span class="dose-freq">2 drops/kg/day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Ketotifen</span></div><div class="dd" contenteditable="false">&gt; 3 months</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Diphenhydramine</span></div><div class="dd" contenteditable="false">&gt; 2 years</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Nasal</div>
+      <div class="drug"><div class="dn"><span class="tag">NAS</span><span class="drug-name-text" contenteditable="false">NaCl Drops / Spray</span></div><div class="dd" contenteditable="false">1–2 drops each nostril · 3–4× / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">NAS</span><span class="drug-name-text" contenteditable="false">Xylometazoline 0.05%</span></div><div class="dd" contenteditable="false">2–3 drops each nostril · 2–3× / day · &gt;2 yr</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">NAS</span><span class="drug-name-text" contenteditable="false">Xylometazoline 0.1%</span></div><div class="dd" contenteditable="false">2–3 drops each nostril · 2–3× / day · &gt;6 yr</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">NAS</span><span class="drug-name-text" contenteditable="false">Oxymetazoline / Naphazoline / Phenylephrine</span></div><div class="dd" contenteditable="false">2–3 drops/spray · 2–3× / day · &gt;6 yr</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 8. COUGH -->
+  <div class="card cough">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">😮‍💨</div><div><div class="card-title">Cough</div><div class="card-ar">السعال</div></div></div>
+    <div class="card-body">
+      <div class="sl">Expectorants / Mucolytics</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Prospan — 1 mo–2 yr</span></div><div class="dd" contenteditable="false">2.5 cc · twice daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Prospan — 2–6 years</span></div><div class="dd" contenteditable="false">5 cc · twice daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Prospan — &gt;6 years</span></div><div class="dd" contenteditable="false">5–10 cc · 3 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Zecuf — 2–6 years</span></div><div class="dd" contenteditable="false">2.5 cc · 3 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Zecuf — &gt;6 years</span></div><div class="dd" contenteditable="false">5 cc · 3 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Bromhexine / Ambroxol / Carbocysteine</span></div><div class="dd" contenteditable="false">&gt; 2 years</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Antitussives</div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Dextromethorphan — 4–12 yr</span></div><div class="dd" contenteditable="false">15 mg · twice daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Dextromethorphan — Adults</span></div><div class="dd" contenteditable="false">30 mg · 3 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Codeine — &gt;12 years</span></div><div class="dd" contenteditable="false">30 mg · 3 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Bronchodilators</div>
+      <div class="drug"><div class="dn"><span class="tag">INH</span><span class="drug-name-text" contenteditable="false">Salbutamol (Ventolin) / Terbutaline</span></div><div class="dd" contenteditable="false">&gt; 2 years</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 9. RTI -->
+  <div class="card resp">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🫁</div><div><div class="card-title">Respiratory Tract Infections</div><div class="card-ar">التهابات الجهاز التنفسي · التهاب الأذن</div></div></div>
+    <div class="card-body">
+      <div class="sl">Amoxicillin</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Amoxicillin 125 mg/5ml</span></div><div class="dd" contenteditable="false">0.25–0.5 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 2.5–5 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Amoxicillin 250 mg/5ml</span></div><div class="dd" contenteditable="false">0.15 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 1.5 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Augmentin</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Augmentin 156 mg/5ml</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Augmentin 312 mg/5ml</span></div><div class="dd" contenteditable="false">0.15 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 1.5 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Augmentin 457 mg/5ml</span></div><div class="dd" contenteditable="false">0.15 cc/kg · 3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 1.5 ml</span><span class="dose-freq">3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Others</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Azithromycin</span></div><div class="dd" contenteditable="false">0.25 cc/kg · once daily</div><div class="dose-result"><span class="dose-val">⚖️ 2.5 ml</span><span class="dose-freq">once daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Cefixime</span></div><div class="dd" contenteditable="false">0.4 cc/kg · once daily</div><div class="dose-result"><span class="dose-val">⚖️ 4 ml</span><span class="dose-freq">once daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Cefdinir / Cefpodoxime</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Trimethoprim</span></div><div class="dd" contenteditable="false">0.5 cc/kg · twice daily</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">twice daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="warn">⚠️ Ceftriaxone (IM/IV) — not OTC</div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 10. GIT -->
+  <div class="card gut">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🦠</div><div><div class="card-title">GIT Infections</div><div class="card-ar">التهابات الجهاز الهضمي</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">AB</span><span class="drug-name-text" contenteditable="false">Metronidazole</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">AB</span><span class="drug-name-text" contenteditable="false">Trimethoprim</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">AB</span><span class="drug-name-text" contenteditable="false">Azithromycin</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 11. UTI -->
+  <div class="card uti">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🫘</div><div><div class="card-title">Urinary Tract Infection</div><div class="card-ar">التهاب المسالك البولية</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">AB</span><span class="drug-name-text" contenteditable="false">Augmentin / Cefixime</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Nitrofurantoin Syrup</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 4 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">4 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">TAB</span><span class="drug-name-text" contenteditable="false">Nitrofurantoin 100 mg — Adults</span></div><div class="dd" contenteditable="false">Twice daily · 5 days</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 12. SKIN -->
+  <div class="card skin">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🧴</div><div><div class="card-title">Skin Infections</div><div class="card-ar">التهابات الجلد</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">AB</span><span class="drug-name-text" contenteditable="false">Augmentin / Azithromycin / Trimethoprim</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 13. DIAPER -->
+  <div class="card diaper">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">👶</div><div><div class="card-title">Diaper Rash</div><div class="card-ar">طفح الحفاظ</div></div></div>
+    <div class="card-body">
+      <div class="sl">Barrier / Emollients</div>
+      <div class="drug"><div class="dn"><span class="tag">TOP</span><span class="drug-name-text" contenteditable="false">Zinc Oxide / Bepanthen / Sudocream</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Antifungal</div>
+      <div class="drug"><div class="dn"><span class="tag">TOP</span><span class="drug-name-text" contenteditable="false">Antifungal Cream</span></div><div class="dd" contenteditable="false"></div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Topical Antibiotics</div>
+      <div class="drug"><div class="dn"><span class="tag">TOP</span><span class="drug-name-text" contenteditable="false">Fusidic Acid / Gentamicin Oint</span></div><div class="dd" contenteditable="false">&gt; 1 month</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Corticosteroids</div>
+      <div class="drug"><div class="dn"><span class="tag">TOP</span><span class="drug-name-text" contenteditable="false">Hydrocortisone / Mometasone</span></div><div class="dd" contenteditable="false">Mometasone ok &lt;2 yr · ideally &gt;2 yr for others</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 14. VIT D -->
+  <div class="card vitd">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">☀️</div><div><div class="card-title">Vitamin D</div><div class="card-ar">فيتامين د</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Vit D — &amp;amp;amp;lt; 1 year</span></div><div class="dd" contenteditable="false">400 IU · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">DRP</span><span class="drug-name-text" contenteditable="false">Vit D — &gt; 1 year</span></div><div class="dd" contenteditable="false">600 IU · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 15. IRON -->
+  <div class="card iron">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🩸</div><div><div class="card-title">Iron Deficiency Anemia</div><div class="card-ar">فقر الدم بنقص الحديد</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Iron — &amp;lt; 1 year</span></div><div class="dd" contenteditable="false">25 mg · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Iron — 1–6 years</span></div><div class="dd" contenteditable="false">25–50 mg · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Iron — &gt; 6 years</span></div><div class="dd" contenteditable="false">50–100 mg · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 16. APPETITE -->
+  <div class="card appet">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🍽️</div><div><div class="card-title">Appetite Stimulants</div><div class="card-ar">محفزات الشهية</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Cyproheptadine — 2–6 years</span></div><div class="dd" contenteditable="false">2–4 mg · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Cyproheptadine — 6–12 years</span></div><div class="dd" contenteditable="false">4–8 mg · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Cyproheptadine — Adults</span></div><div class="dd" contenteditable="false">4 mg · 3 times / day</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 17. OMEGA 3 -->
+  <div class="card omega">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🐟</div><div><div class="card-title">Omega 3</div><div class="card-ar">أوميغا ٣</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Omega 3 — &gt; 4 years</span></div><div class="dd" contenteditable="false">10–12 ml · daily</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 18. SORE THROAT -->
+  <div class="card throat">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🫀</div><div><div class="card-title">Sore Throat</div><div class="card-ar">التهاب الحلق</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">GEN</span><span class="drug-name-text" contenteditable="false">Emollients · Lozenges · Warm Drinks</span></div><div class="dd" contenteditable="false">Antibiotics if needed</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Steroids — severe</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Prednisolone 15 mg/5ml</span></div><div class="dd" contenteditable="false">0.25–0.5 cc/kg · twice daily</div><div class="dose-result"><span class="dose-val">⚖️ 2.5–5 ml</span><span class="dose-freq">twice daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Prednisolone 5 mg/5ml</span></div><div class="dd" contenteditable="false">0.5–1 cc/kg · once or twice daily</div><div class="dose-result"><span class="dose-val">⚖️ 5–10 ml</span><span class="dose-freq">once or twice daily</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="sl">Combination Syrups (&gt;2 yr)</div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Dexone</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 2–3 times / day</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">2–3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">SYR</span><span class="drug-name-text" contenteditable="false">Phenadone</span></div><div class="dd" contenteditable="false">0.5 cc/kg · 2–3 times / day · &gt;2 yr</div><div class="dose-result"><span class="dose-val">⚖️ 5 ml</span><span class="dose-freq">2–3 times / day</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 19. MULTIVITAMINS -->
+  <div class="card appet">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">💊</div><div><div class="card-title">Multivitamins</div><div class="card-ar">الفيتامينات المتعددة</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Multivitamins</span></div><div class="dd" contenteditable="false">As labelled on product</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- 20. WORMS -->
+  <div class="card worms">
+    <div class="stripe"></div>
+    <div class="card-header"><div class="ico">🪱</div><div><div class="card-title">Worms (Anthelmintics)</div><div class="card-ar">الديدان</div></div></div>
+    <div class="card-body">
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Albendazole — &gt; 1 year</span></div><div class="dd" contenteditable="false">15 mg/kg · single dose · repeat after 2 weeks</div><div class="dose-result"><span class="dose-val">⚖️ 150 mg</span><span class="dose-freq">single dose</span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <div class="drug"><div class="dn"><span class="tag">PO</span><span class="drug-name-text" contenteditable="false">Mebendazole — &gt; 2 years</span></div><div class="dd" contenteditable="false">100 mg · single dose</div><div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div><button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button></div>
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>
+  </div>
+
+  <!-- ADD NEW CARD BUTTON -->
+  <button id="addCardBtn" onclick="openAddCard()">＋ إضافة قسم جديد</button>
+
+</div>
+
+<footer><p>Muslim's Clinical Pharmacy Reference · Pediatric Module · قابل للتعديل</p></footer>
+
+<!-- ══ MODAL: ADD DRUG ══ -->
+<div class="modal-bg" id="addDrugModal">
+  <div class="modal">
+    <h2>💊 إضافة دواء جديد</h2>
+    <div class="form-row">
+      <label>نوع الدواء (Tag)</label>
+      <select id="m-tag">
+        <option>SYR</option><option>DRP</option><option>TAB</option><option>PO</option>
+        <option>AMP</option><option>SAC</option><option>SUP</option><option>TOP</option>
+        <option>NAS</option><option>INH</option><option>AB</option><option>DOSE</option>
+        <option>GEN</option><option>OTHER</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>اسم الدواء</label>
+      <input type="text" id="m-name" placeholder="مثال: Amoxicillin 250 mg/5ml">
+    </div>
+    <div class="form-row">
+      <label>الجرعة / التعليمات</label>
+      <input type="text" id="m-dose" placeholder="مثال: 0.5 cc/kg · 3 times / day">
+      <div class="dose-hint">💡 اكتب ml/kg أو cc/kg أو mg/kg أو drops/kg أو drops/kg/day لتفعيل حاسبة الجرعات تلقائياً</div>
+    </div>
+    <div class="form-row">
+      <label>💰 السعر (IQD) — اختياري</label>
+      <input type="text" id="m-price" placeholder="مثال: 3500" style="color:#15803d;font-weight:700;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addDrugModal')">إلغاء</button>
+      <button class="btn-primary" onclick="confirmAddDrug()">✓ إضافة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD CARD ══ -->
+<div class="modal-bg" id="addCardModal">
+  <div class="modal">
+    <h2>📋 إضافة قسم جديد</h2>
+    <div class="form-row">
+      <label>اسم القسم</label>
+      <input type="text" id="c-title" placeholder="مثال: Eye Drops">
+    </div>
+    <div class="form-row">
+      <label>اسم القسم بالعربي</label>
+      <input type="text" id="c-ar" placeholder="مثال: قطرات العيون" dir="rtl">
+    </div>
+    <div class="form-row">
+      <label>الأيقونة (Emoji)</label>
+      <input type="text" id="c-icon" placeholder="👁️" maxlength="4" style="font-size:20px;text-align:center;width:80px">
+    </div>
+    <div class="form-row">
+      <label>لون القسم</label>
+      <div class="color-grid" id="colorGrid"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addCardModal')">إلغاء</button>
+      <button class="btn-primary" onclick="confirmAddCard()">✓ إنشاء القسم</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let editMode = false;
+let targetAddBtn = null;
+let selectedColor = '#3498db';
+
+const COLORS = [
+  '#e74c3c','#e91e8c','#8e44ad','#3498db','#1abc9c','#16a085',
+  '#27ae60','#f39c12','#d35400','#ca6f1e','#2980b9','#7d3c98'
+];
+
+// ═══════════════════════════════════════
+//  PERSISTENT STORAGE — localStorage
+// ═══════════════════════════════════════
+const STORAGE_KEY = 'pediatric_drug_guide_v1';
+let _saveTimer = null;
+
+function saveState() {
+  try {
+    // Collect any custom <style> blocks injected for custom cards
+    const customStyles = [...document.querySelectorAll('head style')]
+      .map(s => s.textContent).join('\n');
+
+    // Temporarily disable contenteditable to get clean HTML snapshot
+    const ceEls = document.querySelectorAll('[contenteditable="true"]');
+    ceEls.forEach(el => el.setAttribute('contenteditable','false'));
+
+    const gridHTML = document.getElementById('mainGrid').innerHTML;
+
+    // Restore contenteditable if still in edit mode
+    if (editMode) {
+      document.querySelectorAll('.drug-name-text, .dd, .card-title, .card-ar')
+        .forEach(el => el.setAttribute('contenteditable','true'));
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      grid: gridHTML,
+      styles: customStyles,
+      ts: Date.now()
+    }));
+  } catch(e) { console.warn('saveState failed:', e); }
+}
+
+function debouncedSave() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveState, 600);
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !data.grid) return false;
+
+    // Restore custom card styles
+    if (data.styles) {
+      const s = document.createElement('style');
+      s.id = 'restored-custom-styles';
+      s.textContent = data.styles;
+      document.head.appendChild(s);
+    }
+
+    // Restore grid HTML
+    document.getElementById('mainGrid').innerHTML = data.grid;
+
+    // Make sure all contenteditable starts as false (not in edit mode on load)
+    document.querySelectorAll('[contenteditable]')
+      .forEach(el => el.setAttribute('contenteditable','false'));
+
+    return true;
+  } catch(e) { console.warn('loadState failed:', e); return false; }
+}
+
+function resetState() {
+  if (confirm('⚠️ هل تريد حذف جميع التعديلات والرجوع للنسخة الأصلية؟\nهذا الإجراء لا يمكن التراجع عنه.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+// ═══════════════════════════════════════
+//  EDIT MODE
+// ═══════════════════════════════════════
+function toggleEdit() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  const btn = document.getElementById('editToggle');
+  btn.classList.toggle('active', editMode);
+  document.getElementById('editLabel').textContent = editMode ? '✔ إنهاء التعديل' : '✏️ تعديل';
+
+  // Enable/disable contenteditable on all editable fields
+  document.querySelectorAll('.drug-name-text, .dd').forEach(el => {
+    el.contentEditable = editMode ? 'true' : 'false';
+  });
+
+  if (!editMode) saveState(); // ← حفظ عند الخروج من وضع التعديل
+  toast(editMode ? '✏️ وضع التعديل مفعّل — اضغط على أي نص لتعديله' : '✔ تم الحفظ والخروج من وضع التعديل');
+}
+
+// ═══════════════════════════════════════
+//  DELETE DRUG
+// ═══════════════════════════════════════
+function delDrug(btn) {
+  const drug = btn.closest('.drug');
+  if (confirm('حذف هذا الدواء؟')) {
+    drug.style.transition = 'opacity .2s, transform .2s';
+    drug.style.opacity = '0';
+    drug.style.transform = 'translateX(20px)';
+    setTimeout(() => { drug.remove(); if (searchInput.value.trim()) doSearch(); saveState(); }, 200);
+    toast('🗑️ تم الحذف');
+  }
+}
+
+// ═══════════════════════════════════════
+//  ADD DRUG MODAL
+// ═══════════════════════════════════════
+function openAddDrug(btn) {
+  targetAddBtn = btn;
+  document.getElementById('m-name').value = '';
+  document.getElementById('m-dose').value = '';
+  document.getElementById('m-price').value = '';
+  document.getElementById('m-tag').value = 'SYR';
+  document.getElementById('addDrugModal').classList.add('open');
+  setTimeout(() => document.getElementById('m-name').focus(), 100);
+}
+
+function confirmAddDrug() {
+  const tag  = document.getElementById('m-tag').value;
+  const name = document.getElementById('m-name').value.trim();
+  const dose = document.getElementById('m-dose').value.trim();
+  const price = document.getElementById('m-price').value.trim();
+  if (!name) { document.getElementById('m-name').focus(); return; }
+
+  const drugEl = buildDrugEl(tag, name, dose);
+
+  // Save price if provided
+  if (price) {
+    const prices = getPrices();
+    prices[name] = price;
+    localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
+    const priceVal = drugEl.querySelector('.price-val');
+    const priceEdit = drugEl.querySelector('.price-edit');
+    if (priceVal) priceVal.textContent = price + ' IQD';
+    if (priceEdit) priceEdit.value = price;
+  }
+
+  // Insert before the "add" button
+  targetAddBtn.parentNode.insertBefore(drugEl, targetAddBtn);
+
+  // If weight/search are active, update immediately
+  const w = parseFloat(document.getElementById('weightInput').value);
+  if (w) calcOneDrug(drugEl, w);
+  if (searchInput.value.trim()) doSearch();
+
+  // Enable editing if in edit mode
+  if (editMode) {
+    drugEl.querySelectorAll('.drug-name-text,.dd').forEach(el => el.contentEditable = 'true');
+  }
+
+  closeModal('addDrugModal');
+  saveState();
+  toast('✓ تمت الإضافة بنجاح' + (price ? ' · 💰 ' + price + ' IQD' : ''));
+}
+
+function buildDrugEl(tag, name, dose) {
+  const d = document.createElement('div');
+  d.className = 'drug';
+  d.innerHTML = `
+    <div class="dn">
+      <span class="tag">${tag}</span>
+      <span class="drug-name-text" contenteditable="false">${escHtml(name)}</span>
+    </div>
+    <div class="dd" contenteditable="false">${escHtml(dose)}</div>
+    <div class="dose-result"><span class="dose-val"></span><span class="dose-freq"></span></div>
+    <div class="drug-price">💰 <span class="price-val">—</span><input class="price-edit" type="text" placeholder="السعر (IQD)..." onchange="saveDrugPrice(this)" onblur="saveDrugPrice(this)" /></div>
+    <button class="del-drug" onclick="delDrug(this)" title="حذف">✕</button>`;
+  return d;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════
+//  ADD CARD MODAL
+// ═══════════════════════════════════════
+function buildColorGrid() {
+  const grid = document.getElementById('colorGrid');
+  grid.innerHTML = '';
+  COLORS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'color-opt' + (c === selectedColor ? ' selected' : '');
+    b.style.background = c;
+    b.title = c;
+    b.onclick = () => {
+      selectedColor = c;
+      grid.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+    };
+    grid.appendChild(b);
+  });
+}
+
+function openAddCard() {
+  document.getElementById('c-title').value = '';
+  document.getElementById('c-ar').value = '';
+  document.getElementById('c-icon').value = '💊';
+  buildColorGrid();
+  document.getElementById('addCardModal').classList.add('open');
+  setTimeout(() => document.getElementById('c-title').focus(), 100);
+}
+
+function confirmAddCard() {
+  const title = document.getElementById('c-title').value.trim();
+  const ar    = document.getElementById('c-ar').value.trim();
+  const icon  = document.getElementById('c-icon').value.trim() || '💊';
+  if (!title) { document.getElementById('c-title').focus(); return; }
+
+  // Create unique class name
+  const cls = 'custom_' + Date.now();
+
+  // Inject style for this card color
+  const style = document.createElement('style');
+  const c = selectedColor;
+  const light = hexToLight(c);
+  style.textContent = `.${cls} .stripe{background:${c}}.${cls} .ico{background:${light}}.${cls} .drug{border-left-color:${c}}.${cls} .tag{background:${c}}`;
+  document.head.appendChild(style);
+
+  const card = document.createElement('div');
+  card.className = `card ${cls}`;
+  card.innerHTML = `
+    <div class="stripe"></div>
+    <div class="card-header">
+      <div class="ico">${icon}</div>
+      <div>
+        <div class="card-title" contenteditable="${editMode}">${escHtml(title)}</div>
+        <div class="card-ar" contenteditable="${editMode}" dir="rtl">${escHtml(ar)}</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <button class="add-drug-btn" onclick="openAddDrug(this)">＋ إضافة دواء</button>
+    </div>`;
+
+  // Insert before the "add card" button
+  const addCardBtn = document.getElementById('addCardBtn');
+  addCardBtn.parentNode.insertBefore(card, addCardBtn);
+
+  closeModal('addCardModal');
+  saveState();
+  toast('✓ تم إنشاء القسم');
+}
+
+function hexToLight(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},0.12)`;
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════
+//  DOSE CALCULATOR
+// ═══════════════════════════════════════
+function normalizeDoseText(text) {
+  return (text || '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[−—]/g, '–')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseDose(text, weight) {
+  if (!text || !weight || weight <= 0) return null;
+  const original = normalizeDoseText(text);
+  const normalized = original.replace(/,/g, '.');
+
+  // Supports: 0.5 cc/kg, 10–15 mg/kg, 2 drops/kg/day, 0.25 ml per kg
+  const rx = /(\d+(?:\.\d+)?)(?:\s*[–\-]\s*(\d+(?:\.\d+)?))?\s*(cc|ml|mL|mg|mcg|µg|g|drops?|قطرة|نقطة)\s*(?:\/|per)\s*kg(?:\s*(?:\/|per)\s*(dose|day|daily))?/i;
+  const m = normalized.match(rx);
+  if (!m) return null;
+
+  const minV = parseFloat(m[1]);
+  const maxV = m[2] ? parseFloat(m[2]) : null;
+  let unit = m[3].toLowerCase();
+  if (unit === 'drop' || unit === 'drops' || unit === 'قطرة' || unit === 'نقطة') unit = 'drops';
+  if (unit === 'cc') unit = 'ml';
+  if (unit === 'µg') unit = 'mcg';
+
+  const tail = normalized.slice(m.index + m[0].length);
+  let freq = extractFrequency(tail) || extractFrequency(normalized) || (m[4] ? `per ${m[4]}` : '');
+  return { min: +(minV * weight).toFixed(2), max: maxV ? +(maxV * weight).toFixed(2) : null, unit, freq };
+}
+
+function extractFrequency(text) {
+  const parts = (text || '')
+    .split(/·|;|،|,/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return parts.find(s => /time|times|day|daily|once|twice|thrice|dose|divided|\b[1-6]\s*[×x]\b|[١-٦]\s*[×x]/i.test(s)) || '';
+}
+
+function fmt(n) {
+  if (!Number.isFinite(n)) return '';
+  if (Number.isInteger(n)) return n.toFixed(0);
+  if (Number.isInteger(n * 10)) return n.toFixed(1);
+  return n.toFixed(2);
+}
+
+function calcOneDrug(drug, weight) {
+  const ddEl = drug.querySelector('.dd');
+  const res  = drug.querySelector('.dose-result');
+  const valEl= drug.querySelector('.dose-val');
+  const frqEl= drug.querySelector('.dose-freq');
+  if (!ddEl || !res || !valEl || !frqEl) return;
+  const p = parseDose(ddEl.textContent, weight);
+  if (!p) {
+    res.classList.remove('show');
+    valEl.textContent = '';
+    frqEl.textContent = '';
+    return;
+  }
+  valEl.textContent = p.max ? `⚖️ ${fmt(p.min)}–${fmt(p.max)} ${p.unit}` : `⚖️ ${fmt(p.min)} ${p.unit}`;
+  frqEl.textContent = p.freq;
+  res.classList.add('show');
+}
+
+function updateDoses() {
+  const w = parseFloat(document.getElementById('weightInput').value);
+  document.querySelectorAll('.drug').forEach(d => {
+    if (!w || isNaN(w)) {
+      const r = d.querySelector('.dose-result');
+      if (r) r.classList.remove('show');
+    } else {
+      calcOneDrug(d, w);
+    }
+  });
+}
+
+// Recalc when user edits dose text
+document.getElementById('mainGrid').addEventListener('input', e => {
+  const drug = e.target.closest?.('.drug');
+  if (e.target.classList.contains('dd')) {
+    const w = parseFloat(document.getElementById('weightInput').value);
+    if (w) calcOneDrug(drug, w);
+    else {
+      const r = drug?.querySelector('.dose-result');
+      if (r) r.classList.remove('show');
+    }
+  }
+  if (e.target.classList.contains('drug-name-text') || e.target.classList.contains('dd')) {
+    if (searchInput?.value?.trim()) doSearch();
+    debouncedSave(); // ← حفظ تلقائي عند تعديل النص
+  }
+});
+
+document.getElementById('weightInput').addEventListener('input', updateDoses);
+
+// ═══════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════
+const searchInput  = document.getElementById('searchInput');
+const clearBtn     = document.getElementById('clearSearch');
+const resultsBadge = document.getElementById('resultsBadge');
+const noResults    = document.getElementById('noResults');
+
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function clearMarks(el) {
+  if (!el) return;
+  el.textContent = el.textContent;
+}
+
+function hlPlainText(text, q) {
+  const safe = escHtml(text || '');
+  if (!q) return safe;
+  const rx = new RegExp(`(${escapeRegExp(q)})`, 'gi');
+  return safe.replace(rx, '<mark>$1</mark>');
+}
+
+function refreshSearchAndDoses(drug) {
+  const w = parseFloat(document.getElementById('weightInput').value);
+  if (drug && w) calcOneDrug(drug, w);
+  if (searchInput.value.trim()) doSearch();
+}
+
+function doSearch() {
+  const rawQ = searchInput.value.trim();
+  const q = rawQ.toLowerCase();
+  clearBtn.classList.toggle('vis', q.length > 0);
+
+  // Remove old highlights without going back to stale cached names.
+  document.querySelectorAll('.drug-name-text').forEach(clearMarks);
+
+  if (!q) {
+    document.querySelectorAll('.drug').forEach(d => d.classList.remove('hidden'));
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('hidden'));
+    document.querySelectorAll('.sl').forEach(s => s.classList.remove('hidden'));
+    resultsBadge.classList.remove('vis');
+    noResults.classList.remove('vis');
+    return;
+  }
+
+  let count = 0;
+  document.querySelectorAll('.drug').forEach(drug => {
+    const nameEl = drug.querySelector('.drug-name-text');
+    const nameT  = (nameEl?.textContent || '').toLowerCase();
+    const ddT    = (drug.querySelector('.dd')?.textContent || '').toLowerCase();
+    const tagT   = (drug.querySelector('.tag')?.textContent || '').toLowerCase();
+    const match  = nameT.includes(q) || ddT.includes(q) || tagT.includes(q);
+    drug.classList.toggle('hidden', !match);
+    if (match) {
+      count++;
+      if (nameEl) nameEl.innerHTML = hlPlainText(nameEl.textContent, rawQ);
+    }
+  });
+
+  document.querySelectorAll('.card').forEach(card => {
+    const has = [...card.querySelectorAll('.drug')].some(d => !d.classList.contains('hidden'));
+    card.classList.toggle('hidden', !has);
+    if (!has) return;
+    const body = card.querySelector('.card-body');
+    if (!body) return;
+    [...body.children].forEach((el, i, arr) => {
+      if (!el.classList.contains('sl')) return;
+      let ok = false;
+      for (let j = i+1; j < arr.length; j++) {
+        if (arr[j].classList.contains('sl')) break;
+        if (arr[j].classList.contains('drug') && !arr[j].classList.contains('hidden')) { ok=true; break; }
+      }
+      el.classList.toggle('hidden', !ok);
+    });
+  });
+
+  resultsBadge.textContent = `${count} نتيجة`;
+  resultsBadge.classList.toggle('vis', true);
+  noResults.classList.toggle('vis', count === 0);
+}
+
+searchInput.addEventListener('input', doSearch);
+clearBtn.addEventListener('click', () => { searchInput.value=''; doSearch(); searchInput.focus(); });
+document.addEventListener('keydown', e => {
+  if (e.key==='/' && document.activeElement!==searchInput && document.activeElement!==document.getElementById('weightInput')) {
+    e.preventDefault(); searchInput.focus();
+  }
+  if (e.key==='Escape') { closeModal('addDrugModal'); closeModal('addCardModal'); }
+});
+
+// ═══════════════════════════════════════
+//  EXPORT — save current DOM as HTML file
+// ═══════════════════════════════════════
+function exportFile() {
+  // Snapshot: turn off edit mode before export
+  const wasEditing = editMode;
+  if (wasEditing) toggleEdit();
+
+  // Clear search state
+  const searchVal = searchInput.value;
+  searchInput.value = '';
+  doSearch();
+
+  // Hide dose results for clean export
+  document.querySelectorAll('.dose-result.show').forEach(r => r.classList.remove('show'));
+  document.getElementById('weightInput').value = '';
+
+  // Get full HTML
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+  // Restore edit mode if was active
+  if (wasEditing) setTimeout(() => toggleEdit(), 50);
+  if (searchVal) { searchInput.value = searchVal; doSearch(); }
+
+  // Download
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'pediatric-drug-guide.html';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  toast('💾 تم تحميل الملف المحدّث');
+}
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Enter key confirms modals
+document.getElementById('m-name').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddDrug(); });
+document.getElementById('m-dose').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddDrug(); });
+document.getElementById('m-price').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddDrug(); });
+document.getElementById('c-title').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddCard(); });
+
+// ═══════════════════════════════════════
+//  AGE → WEIGHT CALCULATOR
+// ═══════════════════════════════════════
+const AGE_WEIGHT_TABLE=[
+  {months:0,label:"عند الولادة",weight:3},{months:1,label:"شهر",weight:4},{months:2,label:"شهرين",weight:5},
+  {months:3,label:"3 أشهر",weight:6},{months:6,label:"6 أشهر",weight:8},{months:9,label:"9 أشهر",weight:9},
+  {months:12,label:"سنة",weight:10},{months:18,label:"سنة ونصف",weight:12},{months:24,label:"سنتين",weight:14},
+  {months:36,label:"3 سنوات",weight:16},{months:48,label:"4 سنوات",weight:18},{months:60,label:"5 سنوات",weight:20},
+  {months:72,label:"6 سنوات",weight:22},{months:84,label:"7 سنوات",weight:24},{months:96,label:"8 سنوات",weight:26},
+  {months:108,label:"9 سنوات",weight:30},{months:120,label:"10 سنوات",weight:32},{months:132,label:"11 سنة",weight:34},
+  {months:144,label:"12 سنة",weight:36}
+];
+let ageMode="months",ageCalcOpen=true;
+function setAgeMode(m){
+  ageMode=m;
+  const a="padding:6px 13px;border-radius:8px;border:1.5px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:11px;font-weight:700;cursor:pointer;";
+  const b="padding:6px 13px;border-radius:8px;border:1.5px solid #dde8f5;background:#f4f8fd;color:#5a7a9a;font-size:11px;font-weight:700;cursor:pointer;";
+  document.getElementById("modeMonths").style.cssText=m==="months"?a:b;
+  document.getElementById("modeYears").style.cssText=m==="years"?a:b;
+  document.getElementById("ageInputLabel").textContent=m==="months"?"العمر (بالأشهر)":"العمر (بالسنوات)";
+  const inp=document.getElementById("ageInput");inp.max=m==="months"?144:12;inp.value="";
+  document.getElementById("ageWeightResult").style.display="none";
+  document.getElementById("ageWeightEmpty").style.display="block";
+}
+function getWeightForMonths(m){
+  if(m<=0)return{weight:3,label:"عند الولادة",exact:true};
+  if(m>=144)return{weight:36,label:"12 سنة",exact:false};
+  let lo=AGE_WEIGHT_TABLE[0],hi=AGE_WEIGHT_TABLE[AGE_WEIGHT_TABLE.length-1];
+  for(let i=0;i<AGE_WEIGHT_TABLE.length;i++){
+    if(AGE_WEIGHT_TABLE[i].months===m)return{weight:AGE_WEIGHT_TABLE[i].weight,label:AGE_WEIGHT_TABLE[i].label,exact:true};
+    if(AGE_WEIGHT_TABLE[i].months<m)lo=AGE_WEIGHT_TABLE[i];
+    else{hi=AGE_WEIGHT_TABLE[i];break;}
+  }
+  const r=(m-lo.months)/(hi.months-lo.months);
+  return{weight:parseFloat((lo.weight+r*(hi.weight-lo.weight)).toFixed(1)),label:lo.label+" → "+hi.label,exact:false};
+}
+function calcWeightFromAge(){
+  const raw=parseFloat(document.getElementById("ageInput").value);
+  const rDiv=document.getElementById("ageWeightResult");
+  const eDiv=document.getElementById("ageWeightEmpty");
+  if(isNaN(raw)||raw<0){rDiv.style.display="none";eDiv.style.display="block";return;}
+  const months=ageMode==="years"?Math.round(raw*12):Math.round(raw);
+  const res=getWeightForMonths(months);
+  document.getElementById("ageWeightVal").textContent=res.weight+" kg";
+  document.getElementById("ageWeightNote").textContent=res.exact?"✓ قيمة مباشرة من الجدول · "+res.label:"≈ تقريب بين: "+res.label;
+  rDiv.style.display="flex";eDiv.style.display="none";
+}
+function applyWeightToCalc(){
+  const raw=parseFloat(document.getElementById("ageInput").value);
+  if(isNaN(raw)||raw<0)return;
+  const months=ageMode==="years"?Math.round(raw*12):Math.round(raw);
+  const res=getWeightForMonths(months);
+  document.getElementById("weightInput").value=res.weight;
+  document.getElementById("weightInput").dispatchEvent(new Event("input"));
+  toast("✓ تم تطبيق الوزن: "+res.weight+" kg");
+}
+function toggleAgeCalc(){
+  ageCalcOpen=!ageCalcOpen;
+  document.getElementById("ageCalcBody").classList.toggle("collapsed",!ageCalcOpen);
+  document.getElementById("ageCalcArrow").style.transform=ageCalcOpen?"":"rotate(-90deg)";
+}
+
+
+// ═══════════════════════════════════════
+//  PRICE STORAGE
+// ═══════════════════════════════════════
+const PRICE_KEY = 'pediatric_drug_prices_v1';
+
+function getPrices() {
+  try { return JSON.parse(localStorage.getItem(PRICE_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveDrugPrice(input) {
+  const drug = input.closest('.drug');
+  if (!drug) return;
+  const nameEl = drug.querySelector('.drug-name-text');
+  const name = nameEl ? nameEl.textContent.trim() : '';
+  if (!name) return;
+  const val = input.value.trim();
+  const prices = getPrices();
+  if (val) {
+    prices[name] = val;
+  } else {
+    delete prices[name];
+  }
+  localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
+  const priceVal = drug.querySelector('.price-val');
+  if (priceVal) priceVal.textContent = val ? val + ' IQD' : '—';
+  toast('💰 تم حفظ السعر');
+}
+
+function loadAllPrices() {
+  const prices = getPrices();
+  document.querySelectorAll('.drug').forEach(drug => {
+    // Inject price field if missing
+    if (!drug.querySelector('.drug-price')) {
+      const priceDiv = document.createElement('div');
+      priceDiv.className = 'drug-price';
+      priceDiv.innerHTML = '💰 <span class="price-val">—</span><input class="price-edit" type="text" placeholder="السعر (IQD)..." onchange="saveDrugPrice(this)" onblur="saveDrugPrice(this)" />';
+      const delBtn = drug.querySelector('.del-drug');
+      if (delBtn) drug.insertBefore(priceDiv, delBtn);
+      else drug.appendChild(priceDiv);
+    }
+    // Apply saved price
+    const nameEl = drug.querySelector('.drug-name-text');
+    const name = nameEl ? nameEl.textContent.trim() : '';
+    if (name && prices[name]) {
+      const priceVal = drug.querySelector('.price-val');
+      const priceEdit = drug.querySelector('.price-edit');
+      if (priceVal) priceVal.textContent = prices[name] + ' IQD';
+      if (priceEdit) priceEdit.value = prices[name];
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+//  QR SCANNER — v3 (improved camera, torch, link-barcode, fuzzy match)
+// ═══════════════════════════════════════
+const BARCODE_MAP_KEY = 'pediatric_barcode_map_v1';
+let qrScanner      = null;
+let linkScanner    = null;
+let foundDrugEl    = null;
+let currentFacingMode   = 'environment';
+let torchEnabled   = false;
+let qrCalcMode     = 'weight';
+let qrAgeUnit      = 'months';
+let currentDrugDoseText = '';
+let pendingLinkDrugEl   = null;
+let pendingLinkCode     = null;
+let cameraStarted  = false;
+
+/* ── barcode map helpers ── */
+function getBarcodeMap() {
+  try { return JSON.parse(localStorage.getItem(BARCODE_MAP_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveBarcodeMap(map) {
+  localStorage.setItem(BARCODE_MAP_KEY, JSON.stringify(map));
+}
+
+/* ── status bar helper ── */
+function setQrStatus(text, type='') {
+  const bar = document.getElementById('qrStatusBar');
+  if (!bar) return;
+  bar.textContent = text;
+  bar.className = 'qr-status-bar' + (type ? ' '+type : '');
+}
+
+/* ── open main scanner ── */
+function openQrScanner() {
+  const modal = document.getElementById('qrScanModal');
+  modal.style.display = 'flex';
+  document.getElementById('fabScanBtn').style.display = 'none';
+  // Reset fallback UI
+  document.getElementById('qrFallbackBox').style.display = 'none';
+  document.getElementById('qrReaderBox').style.display = '';
+  resetQrResultUI();
+  cameraStarted = false;
+  torchEnabled  = false;
+
+  // Check permission first
+  if (navigator.permissions) {
+    navigator.permissions.query({ name: 'camera' }).then(res => {
+      if (res.state === 'denied') {
+        showPermPrompt();
+      } else {
+        startQrCamera();
+      }
+    }).catch(() => startQrCamera());
+  } else {
+    startQrCamera();
+  }
+}
+
+function showPermPrompt() {
+  document.getElementById('qrPermPrompt').classList.add('show');
+  document.getElementById('qrFrameOverlay').style.display = 'none';
+  document.getElementById('qrCamToolbar').style.display = 'none';
+  setQrStatus('⚠️ مطلوب إذن الكاميرا', 'err');
+}
+
+function requestCameraAndStart() {
+  document.getElementById('qrPermPrompt').classList.remove('show');
+  startQrCamera();
+}
+
+function resetQrResultUI() {
+  document.getElementById('qrResultBox').classList.remove('show');
+  document.getElementById('qrNotFound').classList.remove('show');
+  document.getElementById('qrGoToBtn').style.display = 'none';
+  document.getElementById('scanAgainBtn').style.display = 'none';
+  document.getElementById('qrDoseCalc').style.display = 'none';
+  document.getElementById('qrDoseResultLine').classList.remove('show');
+  document.getElementById('qrCtrlRow').style.display = 'flex';
+  foundDrugEl = null;
+  currentDrugDoseText = '';
+}
+
+/* ── start camera ── */
+function startQrCamera(targetEl, onSuccess, statusEl) {
+  // defaults for main scanner
+  const readerId  = targetEl  || 'qrReaderBox';
+  const statusId  = statusEl  || 'qrStatusBar';
+  const isMain    = readerId === 'qrReaderBox';
+
+  // stop existing
+  const scanner = isMain ? qrScanner : linkScanner;
+  if (scanner) {
+    try { scanner.stop().catch(()=>{}); } catch(e) {}
+    try { scanner.clear(); } catch(e) {}
+    if (isMain) qrScanner = null; else linkScanner = null;
+  }
+  document.getElementById(readerId).innerHTML = '';
+
+  if (isMain) {
+    setQrStatus('📷 فتح الكاميرا...', '');
+    document.getElementById('qrFrameOverlay').style.display = 'none';
+    document.getElementById('qrCamToolbar').style.display = 'none';
+  }
+
+  const newScanner = new Html5Qrcode(readerId, { verbose: false });
+  if (isMain) qrScanner = newScanner; else linkScanner = newScanner;
+
+  const config = {
+    fps: 15,
+    qrbox: (w, h) => ({ width: Math.min(240, w-40), height: Math.min(180, h-40) }),
+    aspectRatio: 1.5,
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.QR_CODE,
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.DATA_MATRIX,
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.ITF,
+      Html5QrcodeSupportedFormats.CODABAR,
+    ],
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+  };
+
+  newScanner.start(
+    { facingMode: currentFacingMode },
+    config,
+    (text) => {
+      if (onSuccess) { onSuccess(text); }
+      else           { handleQrResult(text); }
+    }
+  ).then(() => {
+    cameraStarted = true;
+    if (isMain) {
+      setQrStatus('🔍 جاري المسح...', '');
+      document.getElementById('qrFrameOverlay').style.display = 'flex';
+      document.getElementById('qrCamToolbar').style.display = 'flex';
+      document.getElementById('qrPermPrompt').classList.remove('show');
+    } else {
+      document.getElementById('linkFrameOverlay').style.display = 'flex';
+      document.getElementById('linkStatusBar').textContent = '🔍 امسح الكود لربطه...';
+    }
+  }).catch(err => {
+    const msg = (err.message || '').toLowerCase();
+    if (msg.includes('permission') || msg.includes('not allowed') || msg.includes('denied')) {
+      if (isMain) showPermPrompt();
+    } else if (currentFacingMode === 'environment' && isMain) {
+      // retry with front cam
+      currentFacingMode = 'user';
+      setTimeout(() => startQrCamera(targetEl, onSuccess, statusEl), 300);
+    } else {
+      // All cameras failed — show capture fallback
+      if (isMain) {
+        showQrFallback();
+      } else {
+        const errHtml = '<div style="padding:30px;text-align:center;color:#dc2626;font-size:13px;background:#0a0f1a;">⚠️ تعذّر فتح الكاميرا<br><small style="color:#aaa;font-size:11px;margin-top:6px;display:block;">' + (err.message||'خطأ غير معروف') + '</small></div>';
+        document.getElementById(readerId).innerHTML = errHtml;
+      }
+    }
+  });
+}
+
+/* ── fallback: show capture-photo mode ── */
+function showQrFallback() {
+  document.getElementById('qrReaderBox').innerHTML = '';
+  document.getElementById('qrReaderBox').style.display = 'none';
+  const fb = document.getElementById('qrFallbackBox');
+  fb.style.display = 'flex';
+  document.getElementById('qrFrameOverlay').style.display = 'none';
+  document.getElementById('qrCamToolbar').style.display = 'none';
+  setQrStatus('📸 وضع التقاط الصورة', '');
+  // Reset capture inputs so same file can be selected again
+  document.getElementById('qrCaptureInput').value = '';
+  document.getElementById('qrGalleryInput').value = '';
+  document.getElementById('qrFallbackStatus').textContent = '';
+}
+
+function hideQrFallback() {
+  document.getElementById('qrFallbackBox').style.display = 'none';
+  document.getElementById('qrReaderBox').style.display = '';
+}
+
+/* ── scan a captured/gallery image ── */
+function scanCapturedImage(inputEl) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+
+  document.getElementById('qrFallbackStatus').textContent = '⏳ جاري قراءة الكود...';
+
+  const tempScanner = new Html5Qrcode('qrReaderBox');
+  tempScanner.scanFile(file, true)
+    .then(text => {
+      if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+      document.getElementById('qrFallbackStatus').textContent = '✅ تم قراءة الكود!';
+      setQrStatus('✅ تم القراءة!', 'ok');
+      // Reset input so user can scan again
+      inputEl.value = '';
+      handleQrResult(text);
+      document.getElementById('scanAgainBtn').style.display = 'inline-flex';
+    })
+    .catch(err => {
+      document.getElementById('qrFallbackStatus').textContent = '❌ لم يُعثر على كود في الصورة — حاول مرة أخرى';
+      inputEl.value = '';
+    })
+    .finally(() => {
+      try { tempScanner.clear(); } catch(e) {}
+    });
+}
+
+function toggleTorch() {
+  if (!qrScanner || !cameraStarted) return;
+  torchEnabled = !torchEnabled;
+  try {
+    qrScanner.applyVideoConstraints({ advanced: [{ torch: torchEnabled }] })
+      .catch(() => { torchEnabled = !torchEnabled; });
+  } catch(e) { torchEnabled = !torchEnabled; }
+  const btn = document.getElementById('torchBtn');
+  if (btn) btn.classList.toggle('torch-on', torchEnabled);
+}
+
+/* ── flip camera ── */
+function flipCamera() {
+  currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+  torchEnabled = false;
+  const btn = document.getElementById('torchBtn');
+  if (btn) btn.classList.remove('torch-on');
+  resetQrResultUI();
+  startQrCamera();
+}
+
+/* ── resume (scan again) ── */
+function resumeScanner() {
+  resetQrResultUI();
+  // If in fallback mode, just reset the inputs
+  if (document.getElementById('qrFallbackBox').style.display === 'flex') {
+    document.getElementById('qrCaptureInput').value = '';
+    document.getElementById('qrGalleryInput').value = '';
+    document.getElementById('qrFallbackStatus').textContent = '';
+    setQrStatus('📸 جاهز للمسح', '');
+    return;
+  }
+  if (qrScanner && cameraStarted) {
+    try { qrScanner.resume(); setQrStatus('🔍 جاري المسح...'); return; } catch(e) {}
+  }
+  startQrCamera();
+}
+
+/* ── fuzzy drug match ── */
+function findDrugByCode(text) {
+  const map = getBarcodeMap();
+  const drugs = document.querySelectorAll('.drug');
+
+  // 1. Exact barcode map match (highest priority)
+  for (const [drugId, code] of Object.entries(map)) {
+    if (code === text.trim()) {
+      const el = document.querySelector(`[data-drug-id="${drugId}"]`);
+      if (el) return el;
+    }
+  }
+
+  const q = text.trim().toLowerCase();
+
+  // 2. Exact name match
+  for (const drug of drugs) {
+    const name = (drug.querySelector('.drug-name-text')?.textContent || '').toLowerCase().trim();
+    if (name === q) return drug;
+  }
+
+  // 3. Name contains code or code contains name
+  for (const drug of drugs) {
+    const name = (drug.querySelector('.drug-name-text')?.textContent || '').toLowerCase().trim();
+    const dd   = (drug.querySelector('.dd')?.textContent || '').toLowerCase();
+    if (name.includes(q) || q.includes(name) || dd.includes(q)) return drug;
+  }
+
+  // 4. Word-level fuzzy: any word in code matches any word in name
+  const qWords = q.split(/[\s\-_\/\.]+/).filter(w => w.length > 2);
+  for (const drug of drugs) {
+    const name = (drug.querySelector('.drug-name-text')?.textContent || '').toLowerCase();
+    const nameWords = name.split(/[\s\-_\/\.\(\)]+/);
+    if (qWords.some(w => nameWords.some(nw => nw.startsWith(w) || w.startsWith(nw)))) return drug;
+  }
+
+  return null;
+}
+
+/* ── assign unique IDs to all drug elements ── */
+function ensureDrugIds() {
+  let counter = parseInt(localStorage.getItem('drug_id_counter') || '0');
+  document.querySelectorAll('.drug').forEach(drug => {
+    if (!drug.dataset.drugId) {
+      drug.dataset.drugId = 'drug_' + (++counter);
+    }
+  });
+  localStorage.setItem('drug_id_counter', counter);
+}
+
+/* ── handle scan result ── */
+function handleQrResult(text) {
+  if (!text || !text.trim()) return;
+
+  // Pause camera
+  if (qrScanner) { try { qrScanner.pause(true); } catch(e) {} }
+
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+
+  document.getElementById('scanAgainBtn').style.display = 'inline-flex';
+  setQrStatus('✅ تم قراءة الكود!', 'ok');
+
+  ensureDrugIds();
+  const found = findDrugByCode(text);
+
+  if (found) {
+    foundDrugEl = found;
+    const name  = found.querySelector('.drug-name-text')?.textContent || '';
+    const dose  = found.querySelector('.dd')?.textContent || '';
+    const cardTitle = found.closest('.card')?.querySelector('.card-title')?.textContent || '';
+    const tag   = found.querySelector('.tag')?.textContent || '';
+    const price = getPrices()[name.trim()];
+
+    document.getElementById('qrResName').textContent  = name;
+    document.getElementById('qrResCard').textContent  = (cardTitle ? '📂 ' + cardTitle + (tag ? ' · ' : '') : '') + (tag ? '🏷️ ' + tag : '');
+    document.getElementById('qrResDose').textContent  = dose ? '💊 ' + dose : '';
+
+    const priceDiv = document.getElementById('qrResPrice');
+    priceDiv.innerHTML = price
+      ? '<div class="qr-res-price">💰 ' + price + ' IQD</div>'
+      : '<div class="qr-res-price-na">💰 السعر غير مُدخل</div>';
+
+    // Inline dose calc
+    const doseCalcDiv = document.getElementById('qrDoseCalc');
+    if (parseDose(dose, 10)) {
+      currentDrugDoseText = dose;
+      doseCalcDiv.style.display = 'block';
+      document.getElementById('qrWeightIn').value = '';
+      document.getElementById('qrAgeIn').value = '';
+      document.getElementById('qrDoseResultLine').classList.remove('show');
+      setQrCalcMode('weight');
+      const mainW = parseFloat(document.getElementById('weightInput').value);
+      if (mainW) { document.getElementById('qrWeightIn').value = mainW; showQrDoseResult(mainW); }
+    } else {
+      currentDrugDoseText = '';
+      doseCalcDiv.style.display = 'none';
+    }
+
+    document.getElementById('qrResultBox').classList.add('show');
+    document.getElementById('qrNotFound').classList.remove('show');
+    document.getElementById('qrGoToBtn').style.display = 'inline-flex';
+  } else {
+    document.getElementById('qrResultBox').classList.remove('show');
+    document.getElementById('qrRawText').textContent = '📦 كود: ' + text.substring(0, 60);
+    document.getElementById('qrNotFound').classList.add('show');
+    document.getElementById('qrGoToBtn').style.display = 'none';
+  }
+}
+
+/* ── close main scanner ── */
+function closeQrScanner() {
+  document.getElementById('qrScanModal').style.display = 'none';
+  document.getElementById('fabScanBtn').style.display = '';
+  torchEnabled = false;
+  cameraStarted = false;
+  if (qrScanner) {
+    try { qrScanner.stop().then(() => { try { qrScanner.clear(); } catch(e){} qrScanner = null; }).catch(() => { qrScanner = null; }); }
+    catch(e) { qrScanner = null; }
+  }
+}
+
+document.getElementById('qrScanModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('qrScanModal')) closeQrScanner();
+});
+
+/* ── scroll to drug ── */
+function scrollToFoundDrug() {
+  if (!foundDrugEl) return;
+  closeQrScanner();
+  setTimeout(() => {
+    foundDrugEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    foundDrugEl.style.transition = 'box-shadow .3s, background .3s';
+    foundDrugEl.style.background = '#d4f5e7';
+    foundDrugEl.style.boxShadow  = '0 0 0 3px #4ade80';
+    setTimeout(() => { foundDrugEl.style.background = ''; foundDrugEl.style.boxShadow = ''; }, 2000);
+  }, 320);
+}
+
+// ── QR Inline Dose Calculator ──
+function setQrCalcMode(mode) {
+  qrCalcMode = mode;
+  document.getElementById('qrWeightSection').style.display = mode === 'weight' ? '' : 'none';
+  document.getElementById('qrAgeSection').style.display    = mode === 'age' ? 'flex' : 'none';
+  document.getElementById('qrModeWeight').classList.toggle('active', mode === 'weight');
+  document.getElementById('qrModeAge').classList.toggle('active', mode === 'age');
+  document.getElementById('qrDoseResultLine').classList.remove('show');
+}
+function setQrAgeUnit(unit) {
+  qrAgeUnit = unit;
+  document.getElementById('qrAgeUnit').textContent = unit === 'months' ? 'شهر' : 'سنة';
+  document.getElementById('qrAgeMonths').classList.toggle('active', unit === 'months');
+  document.getElementById('qrAgeYears').classList.toggle('active', unit === 'years');
+  calcQrDoseFromAge();
+}
+function calcQrDose() {
+  showQrDoseResult(parseFloat(document.getElementById('qrWeightIn').value));
+}
+function calcQrDoseFromAge() {
+  const raw = parseFloat(document.getElementById('qrAgeIn').value);
+  if (isNaN(raw) || raw < 0) { document.getElementById('qrDoseResultLine').classList.remove('show'); return; }
+  showQrDoseResult(getWeightForMonths(qrAgeUnit === 'years' ? Math.round(raw*12) : Math.round(raw)).weight);
+}
+function showQrDoseResult(weight) {
+  const line = document.getElementById('qrDoseResultLine');
+  if (!currentDrugDoseText || !weight || weight <= 0) { line.classList.remove('show'); return; }
+  const p = parseDose(currentDrugDoseText, weight);
+  if (!p) { line.classList.remove('show'); return; }
+  const doseStr = p.max ? `${fmt(p.min)}–${fmt(p.max)} ${p.unit}` : `${fmt(p.min)} ${p.unit}`;
+  line.textContent = `⚖️ الجرعة: ${doseStr}` + (p.freq ? ` · ${p.freq}` : '');
+  line.classList.add('show');
+}
+
+// ═══════════════════════════════════════
+//  LINK BARCODE TO DRUG
+// ═══════════════════════════════════════
+function openLinkBarcode(btn) {
+  pendingLinkDrugEl = btn.closest('.drug');
+  if (!pendingLinkDrugEl) return;
+  pendingLinkCode = null;
+  const name = pendingLinkDrugEl.querySelector('.drug-name-text')?.textContent || '';
+  const modal = document.getElementById('linkBarcodeModal');
+  modal.style.display = 'flex';
+  document.getElementById('linkDrugNameLabel').textContent = '💊 ' + name;
+  document.getElementById('linkResult').style.display = 'none';
+  document.getElementById('linkConfirmBtn').style.display = 'none';
+  document.getElementById('linkStatusBar').textContent = '🔍 امسح الكود لربطه...';
+  document.getElementById('linkFrameOverlay').style.display = 'none';
+
+  // Check existing link
+  ensureDrugIds();
+  const map = getBarcodeMap();
+  const existingCode = map[pendingLinkDrugEl.dataset.drugId];
+  if (existingCode) {
+    document.getElementById('linkResult').textContent = '🔗 الكود الحالي: ' + existingCode + ' · امسح كوداً جديداً لتغييره';
+    document.getElementById('linkResult').style.display = 'block';
+  }
+
+  // small delay for modal animation
+  setTimeout(() => {
+    startQrCamera('linkReaderBox', (text) => {
+      pendingLinkCode = text.trim();
+      if (linkScanner) { try { linkScanner.pause(true); } catch(e) {} }
+      if (navigator.vibrate) navigator.vibrate(60);
+      document.getElementById('linkStatusBar').textContent = '✅ تم قراءة الكود';
+      document.getElementById('linkResult').textContent = '📦 الكود: ' + text.substring(0,50);
+      document.getElementById('linkResult').style.display = 'block';
+      document.getElementById('linkResult').style.background = '#e8faf4';
+      document.getElementById('linkResult').style.borderColor = '#7dcea0';
+      document.getElementById('linkConfirmBtn').style.display = 'inline-flex';
+    }, 'linkStatusBar');
+  }, 200);
+}
+
+function confirmLinkBarcode() {
+  if (!pendingLinkDrugEl || !pendingLinkCode) return;
+  ensureDrugIds();
+  const map = getBarcodeMap();
+  map[pendingLinkDrugEl.dataset.drugId] = pendingLinkCode;
+  saveBarcodeMap(map);
+
+  // Update link button style
+  const btn = pendingLinkDrugEl.querySelector('.btn-link-qr');
+  if (btn) { btn.classList.add('linked'); btn.title = 'مرتبط: ' + pendingLinkCode; }
+
+  toast('🔗 تم ربط الكود بـ ' + (pendingLinkDrugEl.querySelector('.drug-name-text')?.textContent || 'الدواء'));
+  closeLinkBarcode();
+}
+
+function closeLinkBarcode() {
+  document.getElementById('linkBarcodeModal').style.display = 'none';
+  if (linkScanner) {
+    try { linkScanner.stop().then(() => { try { linkScanner.clear(); } catch(e){} linkScanner = null; }).catch(() => { linkScanner = null; }); }
+    catch(e) { linkScanner = null; }
+  }
+  pendingLinkDrugEl = null;
+  pendingLinkCode   = null;
+}
+document.getElementById('linkBarcodeModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('linkBarcodeModal')) closeLinkBarcode();
+});
+
+/* inject 🔗 button into each drug row on load */
+function injectLinkButtons() {
+  ensureDrugIds();
+  const map = getBarcodeMap();
+  document.querySelectorAll('.drug').forEach(drug => {
+    if (!drug.querySelector('.btn-link-qr')) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-link-qr';
+      btn.title = 'ربط كود بهذا الدواء';
+      btn.textContent = '🔗';
+      btn.onclick = function() { openLinkBarcode(this); };
+      const delBtn = drug.querySelector('.del-drug');
+      if (delBtn) drug.insertBefore(btn, delBtn); else drug.appendChild(btn);
+    }
+    // Mark already-linked
+    const code = map[drug.dataset.drugId];
+    const lb = drug.querySelector('.btn-link-qr');
+    if (lb && code) { lb.classList.add('linked'); lb.title = 'مرتبط: ' + code; }
+  });
+}
+
+
+// ═══════════════════════════════════════
+//  INIT — استعادة البيانات المحفوظة
+// ═══════════════════════════════════════
+(function init() {
+  const restored = loadState();
+  if (restored) {
+    document.querySelectorAll('.modal-bg').forEach(bg => {
+      bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+    });
+  }
+  loadAllPrices();
+  injectLinkButtons();
+})();
+</script>
+
+
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js?v=20260429230251');
+      // فحص تحديثات فوري عند كل فتح
+      reg.update();
+      // لما يجي SW جديد — طبّقه فوراً بدون ما ينتظر المستخدم يسكر التطبيق
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            // أبلّغ الـ SW الجديد يأخذ التحكم فوراً
+            newSW.postMessage({type: 'SKIP_WAITING'});
+          }
+        });
+      });
+      // لما يتغير الـ SW النشط — حدّث الصفحة تلقائياً
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    } catch(err) {
+      console.log('SW error:', err);
+    }
+  });
+}
+</script>
+
+<!-- ══ QR SCANNER MODAL ══ -->
+<div class="modal-bg" id="qrScanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:900;align-items:center;justify-content:center;padding:12px;">
+  <div class="qr-modal-inner">
+    <div class="qr-modal-title">📷 مسح باركود الدواء</div>
+    <div class="qr-modal-sub" id="qrModalSub">وجّه الكاميرا على الكود · يدعم QR · EAN-13 · Code128 · DataMatrix</div>
+
+    <!-- Camera viewport -->
+    <div class="qr-cam-wrap" id="qrCamWrap">
+      <!-- permission prompt -->
+      <div class="qr-perm-prompt" id="qrPermPrompt">
+        <div class="qr-perm-icon">📷</div>
+        <div class="qr-perm-text">اضغط للسماح بالوصول للكاميرا</div>
+        <div class="qr-perm-sub">Chrome يحتاج إذنك لاستخدام الكاميرا</div>
+        <button class="qr-perm-btn" onclick="requestCameraAndStart()">🔓 منح الإذن وابدأ</button>
+      </div>
+
+      <!-- actual video reader -->
+      <div id="qrReaderBox"></div>
+
+      <!-- FALLBACK: capture photo when live cam fails -->
+      <div id="qrFallbackBox" style="display:none;padding:24px;text-align:center;background:#0a0f1a;min-height:200px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+        <div style="font-size:40px;">📸</div>
+        <div style="color:#fff;font-size:13px;font-weight:700;line-height:1.6;">الكاميرا المباشرة غير متاحة<br><span style="color:#aaa;font-size:11px;font-weight:400;">السبب: الملف مفتوح من مدير الملفات</span></div>
+        <label id="captureLbl" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(124,58,237,.4);">
+          📷 التقط صورة للكود
+          <input type="file" accept="image/*" capture="environment" id="qrCaptureInput" style="display:none;" onchange="scanCapturedImage(this)">
+        </label>
+        <label style="background:rgba(255,255,255,.1);color:#ddd;padding:8px 18px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.15);">
+          🖼️ اختر صورة من المعرض
+          <input type="file" accept="image/*" id="qrGalleryInput" style="display:none;" onchange="scanCapturedImage(this)">
+        </label>
+        <div id="qrFallbackStatus" style="color:#aaa;font-size:11px;"></div>
+      </div>
+
+      <!-- scan frame overlay -->
+      <div class="qr-frame-overlay" id="qrFrameOverlay" style="display:none;">
+        <div class="qr-scan-line"></div>
+        <div class="qr-frame">
+          <div class="qr-frame-tl"></div>
+          <div class="qr-frame-br"></div>
+        </div>
+      </div>
+
+      <!-- status bar -->
+      <div class="qr-status-bar" id="qrStatusBar">🔍 جاري المسح...</div>
+
+      <!-- camera controls overlay -->
+      <div class="qr-cam-toolbar" id="qrCamToolbar" style="display:none;">
+        <button class="qr-cam-btn" id="torchBtn" onclick="toggleTorch()">🔦 الإضاءة</button>
+        <button class="qr-cam-btn" id="flipBtn" onclick="flipCamera()">🔄 تبديل</button>
+      </div>
+    </div>
+
+    <!-- scan again / controls row -->
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;flex-wrap:wrap;" id="qrCtrlRow">
+      <button class="btn-scan-again" onclick="resumeScanner()" id="scanAgainBtn" style="display:none;">🔍 مسح مرة أخرى</button>
+    </div>
+
+    <!-- Result Box -->
+    <div class="qr-result-box" id="qrResultBox">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:22px;">✅</span>
+        <div class="qr-res-name" id="qrResName"></div>
+      </div>
+      <div class="qr-res-card" id="qrResCard"></div>
+      <div class="qr-res-dose" id="qrResDose"></div>
+      <div id="qrResPrice" style="margin-bottom:4px;"></div>
+
+      <!-- Inline dose calculator -->
+      <div class="qr-dose-calc" id="qrDoseCalc" style="display:none;">
+        <div class="qr-dose-calc-title">⚖️ حاسبة الجرعة</div>
+        <div class="qr-dose-age-toggle">
+          <button id="qrModeWeight" class="active" onclick="setQrCalcMode('weight')">وزن (kg)</button>
+          <button id="qrModeAge" onclick="setQrCalcMode('age')">عمر</button>
+        </div>
+        <div class="qr-dose-inputs" style="margin-top:6px;">
+          <div id="qrWeightSection">
+            <div class="qr-dose-input-wrap">
+              <input type="number" id="qrWeightIn" placeholder="0" min="0" max="150" step="0.1" oninput="calcQrDose()">
+              <span>kg</span>
+            </div>
+          </div>
+          <div id="qrAgeSection" style="display:none;gap:5px;align-items:center;flex-wrap:wrap;">
+            <div class="qr-dose-input-wrap">
+              <input type="number" id="qrAgeIn" placeholder="0" min="0" max="144" step="1" oninput="calcQrDoseFromAge()">
+              <span id="qrAgeUnit">شهر</span>
+            </div>
+            <div class="qr-dose-age-toggle">
+              <button id="qrAgeMonths" class="active" onclick="setQrAgeUnit('months')">شهر</button>
+              <button id="qrAgeYears" onclick="setQrAgeUnit('years')">سنة</button>
+            </div>
+          </div>
+        </div>
+        <div class="qr-dose-result-line" id="qrDoseResultLine"></div>
+      </div>
+    </div>
+
+    <!-- Not found box -->
+    <div class="qr-not-found" id="qrNotFound">
+      ⚠️ لم يُعثر على هذا الدواء في القائمة<br>
+      <small id="qrRawText" style="font-weight:400;font-size:11px;color:var(--muted);"></small>
+      <div style="margin-top:6px;font-size:11px;color:#5a7a9a;">💡 اربط الكود بدواء: فعّل وضع التعديل واضغط 🔗 على الدواء</div>
+    </div>
+
+    <div class="qr-scan-btns">
+      <button class="btn-reset" onclick="closeQrScanner()" style="min-width:90px;">✕ إغلاق</button>
+      <button class="btn-export" id="qrGoToBtn" style="display:none;min-width:130px;" onclick="scrollToFoundDrug()">↓ انتقل للدواء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LINK-BARCODE MODAL ══ -->
+<div class="modal-bg" id="linkBarcodeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:950;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:20px;padding:22px 20px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+    <div style="font-size:15px;font-weight:800;text-align:center;margin-bottom:4px;">🔗 ربط كود بالدواء</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:14px;" id="linkDrugNameLabel"></div>
+
+    <div class="qr-cam-wrap" id="linkReaderWrap">
+      <div id="linkReaderBox"></div>
+      <div class="qr-frame-overlay" id="linkFrameOverlay" style="display:none;">
+        <div class="qr-scan-line"></div>
+        <div class="qr-frame"><div class="qr-frame-tl"></div><div class="qr-frame-br"></div></div>
+      </div>
+      <div class="qr-status-bar" id="linkStatusBar">🔍 امسح الكود لربطه...</div>
+    </div>
+
+    <div id="linkResult" style="display:none;margin:10px 0;padding:10px 14px;border-radius:10px;background:#e8faf4;border:1.5px solid #7dcea0;font-size:13px;font-weight:700;color:#15803d;text-align:center;"></div>
+
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+      <button class="btn-reset" onclick="closeLinkBarcode()" style="min-width:90px;">✕ إغلاق</button>
+      <button class="btn-export" id="linkConfirmBtn" style="display:none;" onclick="confirmLinkBarcode()">✓ ربط الكود</button>
+    </div>
+  </div>
+</div>
+
+  <!-- QR Scan FAB Button -->
+  <button class="fab-scan" onclick="openQrScanner()" id="fabScanBtn">
+    <div class="fab-scan-pulse"></div>
+    📷 مسح باركود الدواء
+  </button>
+
+</body></html>
