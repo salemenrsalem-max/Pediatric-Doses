@@ -484,7 +484,6 @@ body.edit-mode .btn-link-qr { display:inline-flex; }
   <!-- Export -->
   <button class="btn-export" onclick="exportFile()">💾 تحميل الملف</button>
   <!-- Reset -->
-  <button class="btn-qr-scan" onclick="openQrScanner()">📷 مسح دواء</button>
   <button class="btn-reset" onclick="resetState()" title="حذف جميع التعديلات والرجوع للأصل">↩ إعادة تعيين</button>
   <!-- Results -->
   <div class="results-badge" id="resultsBadge">57 نتيجة</div>
@@ -1783,41 +1782,18 @@ function resumeScanner() {
 /* ── fuzzy drug match ── */
 function findDrugByCode(text) {
   const map = getBarcodeMap();
-  const drugs = document.querySelectorAll('.drug');
-
-  // 1. Exact barcode map match (highest priority)
+  
+  // فحص مباشر: هل الباركود مربوط بدواء معين؟
   for (const [drugId, code] of Object.entries(map)) {
     if (code === text.trim()) {
       const el = document.querySelector(`[data-drug-id="${drugId}"]`);
       if (el) return el;
     }
   }
-
-  const q = text.trim().toLowerCase();
-
-  // 2. Exact name match
-  for (const drug of drugs) {
-    const name = (drug.querySelector('.drug-name-text')?.textContent || '').toLowerCase().trim();
-    if (name === q) return drug;
-  }
-
-  // 3. Name contains code or code contains name
-  for (const drug of drugs) {
-    const name = (drug.querySelector('.drug-name-text')?.textContent || '').toLowerCase().trim();
-    const dd   = (drug.querySelector('.dd')?.textContent || '').toLowerCase();
-    if (name.includes(q) || q.includes(name) || dd.includes(q)) return drug;
-  }
-
-  // 4. Word-level fuzzy: any word in code matches any word in name
-  const qWords = q.split(/[\s\-_\/\.]+/).filter(w => w.length > 2);
-  for (const drug of drugs) {
-    const name = (drug.querySelector('.drug-name-text')?.textContent || '').toLowerCase();
-    const nameWords = name.split(/[\s\-_\/\.\(\)]+/);
-    if (qWords.some(w => nameWords.some(nw => nw.startsWith(w) || w.startsWith(nw)))) return drug;
-  }
-
-  return null;
+  // إذا لم يجده، يرجع فارغ ولا يخمن من عنده
+  return null; 
 }
+
 
 /* ── assign unique IDs to all drug elements ── */
 function ensureDrugIds() {
